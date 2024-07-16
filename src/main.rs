@@ -1,5 +1,5 @@
 use const_hex;
-use noir_sp_fetch::fetch_inputs;
+use noir_safe_prelude::fetch_inputs;
 
 #[tokio::main]
 async fn main() {

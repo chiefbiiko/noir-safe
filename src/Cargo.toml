@@ -1,10 +1,10 @@
 [package]
 version = "0.1.0"
-name = "noir-sp-fetch"
+name = "noir-safe-prelude"
 edition = "2021"
 
 [[bin]]
-name = "noir-sp-fetch-inputs"
+name = "noir-safe-prelude-bin"
 path = "main.rs"
 
 [lib]

@@ -1,5 +1,5 @@
 [package]
-name = "noir+sp"
+name = "noir+safe"
 type = "bin"
 authors = ["chiefbiiko"]
 compiler_version = ">=0.30.0"
