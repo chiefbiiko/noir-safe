@@ -21,7 +21,7 @@ fn main(
 ) {
     //TODO
     //4 account_&storage_proof
-    //read real start byte index from first 32 bytes
+    //read real start byte index from first 2 le bytes
     //and discard leading zeros
 
 
