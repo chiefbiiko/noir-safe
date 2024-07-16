@@ -22,3 +22,4 @@ zerocopy = "0.7.32"
 
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros"] }
 const-hex = "1.11.1"
+serde_arrays = "0.1.0"
