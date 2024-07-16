@@ -20,8 +20,8 @@ pub struct Inputs {
     pub storage_root: [u8; 32],      // eth_getProof::response.storageHash
     pub state_trie_key: [u8; 32],    // keccak256(safe)
     pub storage_trie_key: [u8; 32],  // keccak256(msg_hash + uint256(7))
-    pub account_proof: Vec<Vec<u8>>, // eth_getProof::response.accountProof
-    pub storage_proof: Vec<Vec<u8>>, // eth_getProof::response.storageProof.proof
+    pub account_proof: Vec<u8>,      // eth_getProof::response.accountProof
+    pub storage_proof: Vec<u8>,      // eth_getProof::response.storageProof.proof
     pub header_rlp: Vec<u8>,         // RLP-encoded header
 }
 
@@ -49,11 +49,13 @@ pub async fn fetch_inputs(rpc: &str, safe_address: Address, msg_hash: H256) -> R
                 .account_proof
                 .iter()
                 .map(|b| b.as_bytes().to_vec())
+                .flatten()
                 .collect(),
             storage_proof: proof.storage_proof[0]
                 .proof
                 .iter()
                 .map(|b| b.as_bytes().to_vec())
+                .flatten()
                 .collect(),
         },
     ))
