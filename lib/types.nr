@@ -1,5 +1,3 @@
-
-
 // #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Inputs {
     safe_address: [u8; 20],      // Safe address

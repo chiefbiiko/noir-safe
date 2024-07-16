@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
-use tiny_keccak::{Hasher, Keccak};
 use anyhow::{Context, Result};
 use ethers::{
     providers::{Middleware, Provider},
     types::{Address, Block, H256},
 };
 use rlp::RlpStream;
+use serde::{Deserialize, Serialize};
+use tiny_keccak::{Hasher, Keccak};
 use zerocopy::AsBytes;
 
 pub const SAFE_SIGNED_MESSAGES_SLOT: [u8; 32] = [
@@ -14,18 +14,22 @@ pub const SAFE_SIGNED_MESSAGES_SLOT: [u8; 32] = [
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Inputs {
-    pub safe_address: [u8; 20],      // Safe address
-    pub msg_hash: [u8; 32],          // Custom msg hash
-    pub state_root: [u8; 32],        // eth_getBlockBy*::response.stateRoot
-    pub storage_root: [u8; 32],      // eth_getProof::response.storageHash
-    pub state_trie_key: [u8; 32],    // keccak256(safe)
-    pub storage_trie_key: [u8; 32],  // keccak256(msg_hash + uint256(7))
-    pub account_proof: Vec<u8>,      // eth_getProof::response.accountProof
-    pub storage_proof: Vec<u8>,      // eth_getProof::response.storageProof.proof
-    pub header_rlp: Vec<u8>,         // RLP-encoded header
+    pub safe_address: [u8; 20],     // Safe address
+    pub msg_hash: [u8; 32],         // Custom msg hash
+    pub state_root: [u8; 32],       // eth_getBlockBy*::response.stateRoot
+    pub storage_root: [u8; 32],     // eth_getProof::response.storageHash
+    pub state_trie_key: [u8; 32],   // keccak256(safe)
+    pub storage_trie_key: [u8; 32], // keccak256(msg_hash + uint256(7))
+    pub account_proof: Vec<u8>,     // eth_getProof::response.accountProof
+    pub storage_proof: Vec<u8>,     // eth_getProof::response.storageProof.proof
+    pub header_rlp: Vec<u8>,        // RLP-encoded header
 }
 
-pub async fn fetch_inputs(rpc: &str, safe_address: Address, msg_hash: H256) -> Result<(u64, Inputs)> {
+pub async fn fetch_inputs(
+    rpc: &str,
+    safe_address: Address,
+    msg_hash: H256,
+) -> Result<(u64, Inputs)> {
     let storage_key = keccak256(&concat_bytes64(msg_hash.into(), SAFE_SIGNED_MESSAGES_SLOT));
 
     let provider = Provider::try_from(rpc)?;

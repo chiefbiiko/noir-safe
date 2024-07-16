@@ -2,9 +2,9 @@ use noir_trie_proofs::trie_proof::TrieProof;
 mod constants;
 use constants::{ACCOUNT_PROOF_MAX_DEPTH, STORAGE_PROOF_MAX_DEPTH, SAFE_SIGNED_MSG_VALUE};
 mod types;
-use tyoes::Inputs;
+use types::Inputs;
 
-fn main(inputs: Inputs) {
+fn circuit(inputs: Inputs) {
     let trie_proof = TrieProof {
         key: inputs.storage_trie_key,
         proof: inputs.storage_proof,
@@ -18,11 +18,6 @@ fn main(inputs: Inputs) {
 }
 
 #[test]
-fn test_main() {
-
-    let inputs = Inputs {
-
-    };
-
-    main(inputs);
+fn test_circuit() {
+    circuit(FIXTURE_OK);
 }
