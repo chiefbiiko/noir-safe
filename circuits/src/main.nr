@@ -19,15 +19,15 @@ fn main(
     storage_proof: [u8; 4096],
     header_rlp: [u8; 590]
 ) {
-    //TODO
-    //4 account_&storage_proof
-    //read real start byte index from first 2 le bytes
-    //and discard leading zeros
-
+    let ap_idx = account_proof[0] + (account_proof[1] << 8);
+    let sp_idx = storage_proof[0] + (storage_proof[1] << 8);
+    //FIXME noir slicing
+    let ap = account_proof[ap_idx..4096];
+    let sp = storage_proof[sp_idx..4096];
 
     let trie_proof = TrieProof {
         key: storage_trie_key,
-        proof: storage_proof,
+        proof: sp,
         depth: STORAGE_PROOF_MAX_DEPTH,
         value: SAFE_SIGNED_MSG_VALUE
     };
