@@ -1,4 +1,5 @@
 use noir_trie_proofs::trie_proof::TrieProof;
+
 mod constants;
 use constants::{ACCOUNT_PROOF_MAX_DEPTH, STORAGE_PROOF_MAX_DEPTH, SAFE_SIGNED_MSG_VALUE};
 mod types;
@@ -6,7 +7,7 @@ use types::Inputs;
 mod fixture;
 use fixture::FIXTURE_OK;
 
-fn circuit(inputs: Inputs) {
+fn main(inputs: Inputs) {
     let trie_proof = TrieProof {
         key: inputs.storage_trie_key,
         proof: inputs.storage_proof,
@@ -21,5 +22,5 @@ fn circuit(inputs: Inputs) {
 
 #[test]
 fn test_circuit() {
-    circuit(FIXTURE_OK);
+    main(FIXTURE_OK);
 }

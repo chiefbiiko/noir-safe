@@ -1,8 +1,10 @@
 [package]
-name = "noir+safe"
+name = "noir_safe"
 type = "bin"
 authors = ["chiefbiiko"]
 compiler_version = ">=0.30.0"
+entry = "main.nr"
+license = "MIT"
 
 [dependencies]
 noir_trie_proofs = { git = "aragonzkresearch/noir-trie-proofs", tag = "main", directory = "lib" }
