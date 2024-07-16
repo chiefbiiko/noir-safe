@@ -1,0 +1,8 @@
+[package]
+name = "noir+sp"
+type = "bin"
+authors = ["chiefbiiko"]
+compiler_version = ">=0.30.0"
+
+[dependencies]
+noir_trie_proofs = { git = "aragonzkresearch/noir-trie-proofs", tag = "main", directory = "lib" }

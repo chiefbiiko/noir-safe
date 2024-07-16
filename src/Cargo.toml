@@ -1,0 +1,17 @@
+[package]
+version = "0.1.0"
+name = "noir-sp-fetch"
+edition = "2021"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+serde = { version = "1.0.196", features = ["derive"] }
+# tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak.git", branch = "patch-v2.0.2", features = ["keccak"] }
+tiny-keccak = "2.0.2"
+
+anyhow = "1.0.81"
+ethers = "2.0.13"
+rlp = { version = "0.5", features = ["derive"] }
+zerocopy = "0.7.32"
