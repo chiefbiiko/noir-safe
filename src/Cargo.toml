@@ -3,6 +3,10 @@ version = "0.1.0"
 name = "noir-sp-fetch"
 edition = "2021"
 
+[[bin]]
+name = "noir-sp-fetch-inputs"
+path = "main.rs"
+
 [lib]
 path = "lib.rs"
 
@@ -15,3 +19,6 @@ anyhow = "1.0.81"
 ethers = "2.0.13"
 rlp = { version = "0.5", features = ["derive"] }
 zerocopy = "0.7.32"
+
+tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros"] }
+const-hex = "1.11.1"
