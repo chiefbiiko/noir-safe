@@ -3,6 +3,8 @@ mod constants;
 use constants::{ACCOUNT_PROOF_MAX_DEPTH, STORAGE_PROOF_MAX_DEPTH, SAFE_SIGNED_MSG_VALUE};
 mod types;
 use types::Inputs;
+mod fixture;
+use fixture::FIXTURE_OK;
 
 fn circuit(inputs: Inputs) {
     let trie_proof = TrieProof {
