@@ -175,12 +175,18 @@ fn u8_to_u64_arr<const L: usize>(byte_array: [u8; L]) -> [u64; L] {
     byte_array.as_bytes().into_iter().map(|b| *b as u64).collect::<Vec<u64>>().try_into().unwrap()
 }
 
+/// Left-pads zeros while writing the new head index into the first two bytes.
 fn fixed_size_proof(proof: &[Bytes]) -> [u64; 4096] {
-   proof.iter()
-    .map(|b| b.as_bytes().to_vec())
-    .flatten()
-    .map(|b| b as u64) //
-    .collect::<Vec<u64>>()
-    .try_into()
-    .expect("proof")
+    let vsa = proof.iter()
+        .map(|b| b.as_bytes().to_vec())
+        .flatten()
+        .map(|b| b as u64) //
+        .collect::<Vec<u64>>();
+    let mut fsa: [u64; 4096] = [0; 4096];
+    let idx = 4094_u16 - vsa.len() as u16 + 2_u16;
+    let idx_le = idx.to_le_bytes();
+    fsa[0] = idx_le[0] as u64;
+    fsa[1] = idx_le[1] as u64;
+    fsa[(idx as usize)..4096].copy_from_slice(&vsa);
+    fsa
 }
