@@ -1,5 +1,5 @@
-use const_hex;
-use noir_safe_prelude::fetch_inputs;
+// use const_hex;
+// use noir_safe_prelude::fetch_inputs;
 
 #[tokio::main]
 async fn main() {
@@ -13,9 +13,11 @@ async fn main() {
     )
     .expect("env var MSG_HASH");
 
-    let (anchor, inputs) = fetch_inputs(&rpc, safe.into(), msg_hash.into())
+    let (anchor, inputs) = noir_safe_prelude::fetch_inputs(&rpc, safe.into(), msg_hash.into())
         .await
         .expect("fetch_inputs failed");
 
-    println!("anchor {}\ninputs {:?}", anchor, inputs);
+    let prover_toml = toml::to_string(&inputs).expect("toml");
+    std::fs::write("../circuits/Prover.toml", &prover_toml).expect("prover toml");
+    println!("anchor {}\nProver.toml {:?}", anchor, &prover_toml);
 }

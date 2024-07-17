@@ -33,6 +33,7 @@ pub struct Inputs {
     pub msg_hash: [u8; 32],                                                  // Custom msg hash
     pub state_root: [u8; 32],                                                // eth_getBlockBy*::stateRoot
     pub storage_root: [u8; 32],                                              // eth_getProof::storageHash
+    pub account_key: [u8; 20],                                               // bare account key
     pub storage_key: [u8; 32],                                               // keccak256(msg_hash + uint256(7))
     pub account_proof_depth: usize,                                          // eth_getProof::accountProof.len()
     pub storage_proof_depth: usize,                                          // eth_getProof::storageProof.proof.len()
@@ -69,12 +70,14 @@ pub async fn fetch_inputs(
         proof.storage_hash.as_bytes(),           // 32 bytes
         keccak256(code).as_bytes()               // 32 bytes
     ].into_iter().flatten().map(|b| *b).collect();
-    let storage_proof_depth =  proof.storage_proof[0].proof.len();
-    let account_proof_depth =  proof.account_proof.len();
+    // let storage_proof_depth =  proof.storage_proof[0].proof.len();
+    // let account_proof_depth =  proof.account_proof.len();
 
-    let Padded {
+    let TrieProof {
         proof: padded_storage_proof,
-        value: _
+        value: _,
+        depth: storage_proof_depth,
+        key: _ 
     } = preprocess_proof(
         &proof.storage_proof[0].proof,
         storage_key.to_vec(), 
@@ -84,9 +87,11 @@ pub async fn fetch_inputs(
         MAX_STORAGE_VALUE_LENGTH
     ).expect("TODO");
 
-    let Padded {
+    let TrieProof {
         proof: padded_account_proof,
-        value: padded_account_value
+        value: padded_account_value,
+        depth: account_proof_depth,
+        key: account_key
     } = preprocess_proof(
         &proof.account_proof,
         safe_address.as_bytes().into(), 
@@ -104,7 +109,8 @@ pub async fn fetch_inputs(
             header_rlp: rlp_encode_header(&block),
             state_root: block.state_root.into(),
             storage_root: proof.storage_hash.into(),
-            storage_key: storage_key,
+            account_key: account_key.try_into().expect("account key"),
+            storage_key,
             account_proof_depth,
             storage_proof_depth,
             padded_account_value: padded_account_value.try_into().expect("padded account value"),
@@ -160,14 +166,19 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
     out
 }
 
-/// Trie proof padding struct mirroring the equivalent Noir code
-pub struct Padded
+/// Trie proof struct mirroring the equivalent Noir code
+pub struct TrieProof
 {
+    /// Unhashed key
+    key: Vec<u8>,
     /// Flat RLP-encoded proof with appropriate padding
     proof: Vec<u8>,
+    /// Actual proof depth
+    depth: usize,
     /// The value resolved by the proof
     value: Vec<u8>,
 }
+
 
 /// Trie proof preprocessor. Returns a proof suitable for use in a Noir program using the noir-trie-proofs library.
 /// Note: Depending on the application, the `value` field of the struct may have to be further processed, e.g.
@@ -187,7 +198,7 @@ pub fn preprocess_proof(
     max_depth: usize,
     max_node_len: usize,
     max_value_len: usize,
-) -> Result<Padded, Box<dyn std::error::Error>>
+) -> Result<TrieProof, Box<dyn std::error::Error>>
 {
     // Depth of trie proof
     let depth = proof.len();
@@ -229,8 +240,10 @@ pub fn preprocess_proof(
     // Left-pad value with zeros
     let padded_value = left_pad(&value, max_value_len)?;
 
-    Ok(Padded {
+    Ok(TrieProof {
+        key,
         proof: padded_proof,
+        depth,
         value: padded_value,
     })
 }
