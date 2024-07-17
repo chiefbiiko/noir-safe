@@ -31,18 +31,12 @@ fn main(
         value: SAFE_SIGNED_MSG_VALUE
     };
     let _ = stp.verify_storage_root(storage_root);
-
     //TODO TrieProof::verify_state_root()
-
 }
 
-fn tail(
-    arr: [u8; 4096],
-    offset: u16
-) -> [u8] {
-    let real_len = 4096 - offset;
+fn tail(arr: [u8; 4096], offset: u16) -> [u8] {
     let mut slice = &[];
-    for i in 0..real_len {
+    for i in 0..(4096 - offset) {
         slice = slice.push_back(arr[i + offset]);
     }
     slice
