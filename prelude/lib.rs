@@ -33,7 +33,6 @@ pub struct Inputs {
     pub msg_hash: [u8; 32],                                                  // Custom msg hash
     pub state_root: [u8; 32],                                                // eth_getBlockBy*::stateRoot
     pub storage_root: [u8; 32],                                              // eth_getProof::storageHash
-    pub account_key: [u8; 20],                                               // bare account key
     pub storage_key: [u8; 32],                                               // keccak256(msg_hash + uint256(7))
     pub account_proof_depth: usize,                                          // eth_getProof::accountProof.len()
     pub storage_proof_depth: usize,                                          // eth_getProof::storageProof.proof.len()
@@ -60,18 +59,6 @@ pub async fn fetch_inputs(
     let proof = provider
         .get_proof(safe_address, vec![storage_key.into()], Some(latest.into()))
         .await?;
-    // let nonce = provider.get_transaction_count(safe_address, Some(latest.into())).await?;
-    // let balance = provider.get_balance(safe_address, Some(latest.into())).await?;
-    // let code = provider.get_code(safe_address, Some(latest.into())).await?;
-
-    // let account_value: Vec<u8> = vec![
-    //     &nonce.as_u64().to_be_bytes(),           // 8 bytes
-    //     &balance.as_u128().to_be_bytes()[4..16], // 12 bytes
-    //     proof.storage_hash.as_bytes(),           // 32 bytes
-    //     keccak256(code).as_bytes()               // 32 bytes
-    // ].into_iter().flatten().map(|b| *b).collect();
-    // let storage_proof_depth =  proof.storage_proof[0].proof.len();
-    // let account_proof_depth =  proof.account_proof.len();
 
     let account_value = rlp::Rlp::new(
         &proof.account_proof
@@ -101,7 +88,7 @@ pub async fn fetch_inputs(
         proof: padded_account_proof,
         value: padded_account_value,
         depth: account_proof_depth,
-        key: account_key
+        key: _
     } = preprocess_proof(
         &proof.account_proof,
         safe_address.as_bytes().to_vec(), 
@@ -119,7 +106,6 @@ pub async fn fetch_inputs(
             header_rlp: rlp_encode_header(&block),
             state_root: block.state_root.into(),
             storage_root: proof.storage_hash.into(),
-            account_key: account_key.try_into().expect("account key"),
             storage_key,
             account_proof_depth,
             storage_proof_depth,
@@ -188,7 +174,6 @@ pub struct TrieProof
     /// The value resolved by the proof
     value: Vec<u8>,
 }
-
 
 /// Trie proof preprocessor. Returns a proof suitable for use in a Noir program using the noir-trie-proofs library.
 /// Note: Depending on the application, the `value` field of the struct may have to be further processed, e.g.
