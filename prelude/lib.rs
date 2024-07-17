@@ -19,13 +19,13 @@ pub struct Inputs {
     pub state_root: [u8; 32],       // eth_getBlockBy*::response.stateRoot
     pub storage_root: [u8; 32],     // eth_getProof::response.storageHash
     pub state_trie_key: [u8; 32],   // keccak256(safe)
-    pub storage_trie_key: [u8; 32], // keccak256(msg_hash + uint256(7))
+    pub storage_key: [u8; 32],      // keccak256(msg_hash + uint256(7))
     #[serde(with = "serde_arrays")]
-    pub account_proof: [u8; 7448], // eth_getProof::response.accountProof
+    pub account_proof: [u8; 7448],  // eth_getProof::response.accountProof
     #[serde(with = "serde_arrays")]
-    pub storage_proof: [u8; 7448], // eth_getProof::response.storageProof.proof
+    pub storage_proof: [u8; 7448],  // eth_getProof::response.storageProof.proof
     #[serde(with = "serde_arrays")]
-    pub header_rlp: [u8; 590], // RLP-encoded header
+    pub header_rlp: [u8; 590],      // RLP-encoded header
 }
 
 pub async fn fetch_inputs(
@@ -51,7 +51,8 @@ pub async fn fetch_inputs(
             state_root: block.state_root.into(),
             storage_root: proof.storage_hash.into(),
             state_trie_key: keccak256(&safe_address),
-            storage_trie_key: keccak256(&storage_key),
+            // storage_trie_key: keccak256(&storage_key),
+            storage_key: storage_key,
             account_proof: fixed_size_proof(&proof.account_proof),
             storage_proof: fixed_size_proof(&proof.storage_proof[0].proof),
         },

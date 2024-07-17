@@ -1,4 +1,5 @@
 use dep::noir_trie_proofs::trie_proof::TrieProof;
+use dep::noir_trie_proofs::{state_proof::StateProof, storage_proof::StorageProof};
 
 //FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
 global ACCOUNT_PROOF_MAX_DEPTH = 14;
@@ -17,7 +18,7 @@ fn main(
     state_root: [u8; 32],
     storage_root: [u8; 32],
     state_trie_key: [u8; 32],
-    storage_trie_key: [u8; 32],
+    storage_key: [u8; 32],
     account_proof: [u8; 7448],
     storage_proof: [u8; 7448],
     header_rlp: [u8; 590]
@@ -28,7 +29,7 @@ fn main(
     // let ap = tail(account_proof, ap_idx);
 
     let stp = TrieProof {
-        key: storage_trie_key,
+        key: storage_key,
         proof: storage_proof, //sp.as_array(),
         depth: STORAGE_PROOF_MAX_DEPTH,
         value: SAFE_SIGNED_MSG_VALUE
