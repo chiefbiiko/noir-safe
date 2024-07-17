@@ -8,6 +8,9 @@ global STORAGE_PROOF_MAX_DEPTH = 13;
 global SAFE_SIGNED_MSG_VALUE =
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
 
+//SEE https://github.com/aragonzkresearch/noir-trie-proofs/blob/cfaba4e612e4e443c0c7c81cb06c4087313a9e2e/lib/src/const.nr#L8
+// proof max byte length: 7448 = 532*14
+
 fn main(
     safe_address: [u8; 20],
     msg_hash: [u8; 32],
@@ -15,8 +18,8 @@ fn main(
     storage_root: [u8; 32],
     state_trie_key: [u8; 32],
     storage_trie_key: [u8; 32],
-    account_proof: [u8; 4096],
-    storage_proof: [u8; 4096],
+    account_proof: [u8; 7448],
+    storage_proof: [u8; 7448],
     header_rlp: [u8; 590]
 ) {
     // let sp_idx = storage_proof[0] as u16 + (storage_proof[1] << 8) as u16;
@@ -34,9 +37,9 @@ fn main(
     //TODO TrieProof::verify_state_root()
 }
 
-// fn tail(arr: [u8; 4096], offset: u16) -> [u8] {
+// fn tail(arr: [u8; 7448], offset: u16) -> [u8] {
 //     let mut slice = &[];
-//     for i in 0..(4096 - offset) {
+//     for i in 0..(7448 - offset) {
 //         slice = slice.push_back(arr[i + offset]);
 //     }
 //     slice

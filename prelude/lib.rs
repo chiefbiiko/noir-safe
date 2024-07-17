@@ -21,9 +21,9 @@ pub struct Inputs {
     pub state_trie_key: [u8; 32],   // keccak256(safe)
     pub storage_trie_key: [u8; 32], // keccak256(msg_hash + uint256(7))
     #[serde(with = "serde_arrays")]
-    pub account_proof: [u8; 4096], // eth_getProof::response.accountProof
+    pub account_proof: [u8; 7448], // eth_getProof::response.accountProof
     #[serde(with = "serde_arrays")]
-    pub storage_proof: [u8; 4096], // eth_getProof::response.storageProof.proof
+    pub storage_proof: [u8; 7448], // eth_getProof::response.storageProof.proof
     #[serde(with = "serde_arrays")]
     pub header_rlp: [u8; 590], // RLP-encoded header
 }
@@ -105,20 +105,20 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
 }
 
 // / Left-pads zeros while writing the new head index into the first two bytes.
-/// Right-pads zeros up to a length of 4096.
-fn fixed_size_proof(proof: &[Bytes]) -> [u8; 4096] {
+/// Right-pads zeros up to a length of 7448.
+fn fixed_size_proof(proof: &[Bytes]) -> [u8; 7448] {
     let vsa = proof
         .iter()
         .map(|b| b.as_bytes().to_vec())
         .flatten()
         .map(|b| b as u8) //
         .collect::<Vec<u8>>();
-    let mut fsa: [u8; 4096] = [0; 4096];
+    let mut fsa: [u8; 7448] = [0; 7448];
     // let idx = 4094_u16 - vsa.len() as u16 + 2_u16;
     // let idx_le = idx.to_le_bytes();
     // fsa[0] = idx_le[0] as u8;
     // fsa[1] = idx_le[1] as u8;
-    // fsa[(idx as usize)..4096].copy_from_slice(&vsa);
+    // fsa[(idx as usize)..7448].copy_from_slice(&vsa);
     fsa[0..vsa.len()].copy_from_slice(&vsa);
     fsa
 }
