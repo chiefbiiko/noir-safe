@@ -45,7 +45,6 @@ fn main(
 
 }
 
-//FINDOUT how2 test with(out) Prover.toml ?
 // #[test]
 // fn test_main() {
 //     main(1, 2);
