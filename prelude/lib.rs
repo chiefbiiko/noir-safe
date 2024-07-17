@@ -31,7 +31,7 @@ pub struct Inputs {
     pub msg_hash: [u8; 32],         // Custom msg hash
     pub state_root: [u8; 32],       // eth_getBlockBy*::response.stateRoot
     pub storage_root: [u8; 32],     // eth_getProof::response.storageHash
-    pub state_trie_key: [u8; 32],   // keccak256(safe)
+    // pub state_trie_key: [u8; 32],   // keccak256(safe)
     pub storage_key: [u8; 32],      // keccak256(msg_hash + uint256(7))
     pub account_proof_depth: usize, // eth_getProof::response.accountProof.len()
     pub storage_proof_depth: usize, // eth_getProof::response.storageProof.proof.len()
@@ -59,7 +59,12 @@ pub async fn fetch_inputs(
         .get_proof(safe_address, vec![storage_key.into()], Some(latest.into()))
         .await?;
 
+    let nonce = provider.get_transaction_count(safe_address, Some(latest.into())).await?;
+    let balance = provider.get_balance(safe_address, Some(latest.into())).await?;
+    let code = provider.get_code(safe_address, Some(latest.into())).await?;
+
     let storage_proof_depth =  proof.storage_proof[0].proof.len();
+    let account_proof_depth =  proof.account_proof.len();
 
     let Padded {
         proof: padded_storage_proof,
@@ -73,6 +78,25 @@ pub async fn fetch_inputs(
         MAX_STORAGE_VALUE_LENGTH
     ).expect("TODO");
 
+    let account_node: Vec<u8> = vec![
+        &nonce.as_u64().to_be_bytes(), // 8 bytes
+        &balance.as_u128().to_be_bytes()[4..16], // 12 bytes
+        proof.storage_hash.as_bytes(), // 32 bytes
+        keccak256(code).as_bytes() // 32 bytes
+    ].into_iter().flatten().map(|b| *b).collect();
+
+    let Padded {
+        proof: padded_account_proof,
+        value: padded_account_value
+    } = preprocess_proof(
+        &proof.account_proof,
+        safe_address.as_bytes().into(), 
+        account_node,
+        ACCOUNT_PROOF_MAX_DEPTH, 
+        MAX_TRIE_NODE_LENGTH, 
+        MAX_ACCOUNT_STATE_LENGTH
+    ).expect("TODO");
+
     Ok((
         latest.as_u64(),
         Inputs {
@@ -81,13 +105,13 @@ pub async fn fetch_inputs(
             header_rlp: rlp_encode_header(&block),
             state_root: block.state_root.into(),
             storage_root: proof.storage_hash.into(),
-            state_trie_key: keccak256(&safe_address),
+            // state_trie_key: keccak256(&safe_address),
             // storage_trie_key: keccak256(&storage_key),
             storage_key: storage_key,
-            account_proof_depth: proof.account_proof.len(),
+            account_proof_depth,
             storage_proof_depth,
-            padded_account_value: [0; MAX_ACCOUNT_STATE_LENGTH],
-            account_proof: fixed_size_proof(&proof.account_proof),
+            padded_account_value: padded_account_value.try_into().expect("padded account value"),
+            account_proof: padded_account_proof.try_into().expect("padded account proof"),
             storage_proof: padded_storage_proof.try_into().expect("padded storage proof"),
         },
     ))

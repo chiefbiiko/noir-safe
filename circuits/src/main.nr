@@ -8,6 +8,8 @@ global STORAGE_PROOF_MAX_DEPTH = 13;
 //SEE https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/libraries/SignMessageLib.sol#L24
 global SAFE_SIGNED_MSG_VALUE =
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+//SEE https://github.com/aragonzkresearch/noir-trie-proofs/blob/cfaba4e612e4e443c0c7c81cb06c4087313a9e2e/src/lib.rs#L11
+global MAX_ACCOUNT_STATE_LENGTH = 134;
 
 //SEE https://github.com/aragonzkresearch/noir-trie-proofs/blob/cfaba4e612e4e443c0c7c81cb06c4087313a9e2e/lib/src/const.nr#L8
 // proof max byte length: 7448 = 532*14
@@ -17,36 +19,35 @@ fn main(
     msg_hash: [u8; 32],
     state_root: [u8; 32],
     storage_root: [u8; 32],
-    state_trie_key: [u8; 32],
+    // state_trie_key: [u8; 32],
     storage_key: [u8; 32],
+    account_proof_depth: u64,
+    storage_proof_depth: u64,
+    padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
     account_proof: [u8; 7448],
     storage_proof: [u8; 7448],
     header_rlp: [u8; 590]
 ) {
-    // let sp_idx = storage_proof[0] as u16 + (storage_proof[1] << 8) as u16;
-    // let ap_idx = account_proof[0] as u16 + (account_proof[1] << 8) as u16;
-    // let sp = tail(storage_proof, sp_idx);
-    // let ap = tail(account_proof, ap_idx);
-
     let stp = TrieProof {
         key: storage_key,
-        proof: storage_proof, //sp.as_array(),
-        depth: STORAGE_PROOF_MAX_DEPTH,
+        proof: storage_proof,
+        depth: storage_proof_depth,
         value: SAFE_SIGNED_MSG_VALUE
     };
     let _ = stp.verify_storage_root(storage_root);
-    //TODO TrieProof::verify_state_root()
+
+    let atp = TrieProof {
+        key: safe_address,
+        proof: account_proof,
+        depth: account_proof_depth,
+        value: padded_account_value
+    };
+    let _ = atp.verify_state_root(state_root);
+
+    //TODO calc challenge and blockhash
 }
 
-// fn tail(arr: [u8; 7448], offset: u16) -> [u8] {
-//     let mut slice = &[];
-//     for i in 0..(7448 - offset) {
-//         slice = slice.push_back(arr[i + offset]);
-//     }
-//     slice
-// }
-
-//FIXME how2 test with PRover.toml
+//FINDOUT how2 wen test/rels with Prover.toml ?
 // #[test]
 // fn test_circuit() {
 //     main(FIXTURE_OK);
