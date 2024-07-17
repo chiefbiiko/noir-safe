@@ -36,13 +36,13 @@ fn main(
     };
     let _ = stp.verify_storage_root(storage_root);
 
-    let atp = TrieProof {
-        key: safe_address,
-        proof: account_proof,
-        depth: account_proof_depth,
-        value: padded_account_value
-    };
-    let _ = atp.verify_state_root(state_root);
+    // let atp = TrieProof {
+    //     key: safe_address,
+    //     proof: account_proof,
+    //     depth: account_proof_depth,
+    //     value: padded_account_value
+    // };
+    // let _ = atp.verify_state_root(state_root);
 
     //TODO calc challenge and blockhash
 }

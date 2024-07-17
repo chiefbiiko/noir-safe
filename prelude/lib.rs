@@ -8,15 +8,17 @@ use serde::{Deserialize, Serialize};
 use tiny_keccak::{Hasher, Keccak};
 use zerocopy::AsBytes;
 
+/// NOTE Since Safes have proxies the actual storage slot of the signed_messages mapping is 5+2
 pub const SAFE_SIGNED_MESSAGES_SLOT: [u8; 32] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,
 ];
+/// SEE https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/libraries/SignMessageLib.sol#L24
 pub const SAFE_SIGNED_MSG_VALUE: [u8; 32] =
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
 
-//FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
+/// FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
 const ACCOUNT_PROOF_MAX_DEPTH: usize = 14;
-//FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L116
+/// FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L116
 const STORAGE_PROOF_MAX_DEPTH: usize = 13;
 /// Maximum length of a state or storage trie node in bytes
 const MAX_TRIE_NODE_LENGTH: usize = 532;
@@ -27,22 +29,21 @@ const MAX_ACCOUNT_STATE_LENGTH: usize = 134;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Inputs {
-    pub safe_address: [u8; 20],     // Safe address
-    pub msg_hash: [u8; 32],         // Custom msg hash
-    pub state_root: [u8; 32],       // eth_getBlockBy*::response.stateRoot
-    pub storage_root: [u8; 32],     // eth_getProof::response.storageHash
-    // pub state_trie_key: [u8; 32],   // keccak256(safe)
-    pub storage_key: [u8; 32],      // keccak256(msg_hash + uint256(7))
-    pub account_proof_depth: usize, // eth_getProof::response.accountProof.len()
-    pub storage_proof_depth: usize, // eth_getProof::response.storageProof.proof.len()
+    pub safe_address: [u8; 20],                                              // Safe address
+    pub msg_hash: [u8; 32],                                                  // Custom msg hash
+    pub state_root: [u8; 32],                                                // eth_getBlockBy*::stateRoot
+    pub storage_root: [u8; 32],                                              // eth_getProof::storageHash
+    pub storage_key: [u8; 32],                                               // keccak256(msg_hash + uint256(7))
+    pub account_proof_depth: usize,                                          // eth_getProof::accountProof.len()
+    pub storage_proof_depth: usize,                                          // eth_getProof::storageProof.proof.len()
     #[serde(with = "serde_arrays")]
-    pub padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
+    pub padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],                // preprocess_proof()::value
     #[serde(with = "serde_arrays")]
-    pub account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH],  // eth_getProof::response.accountProof
+    pub account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH], // eth_getProof::accountProof
     #[serde(with = "serde_arrays")]
-    pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH],  // eth_getProof::response.storageProof.proof
+    pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH], // eth_getProof::storageProof.proof
     #[serde(with = "serde_arrays")]
-    pub header_rlp: [u8; 590],      // RLP-encoded header
+    pub header_rlp: [u8; 590],                                               // RLP-encoded header
 }
 
 pub async fn fetch_inputs(
@@ -58,11 +59,16 @@ pub async fn fetch_inputs(
     let proof = provider
         .get_proof(safe_address, vec![storage_key.into()], Some(latest.into()))
         .await?;
-
     let nonce = provider.get_transaction_count(safe_address, Some(latest.into())).await?;
     let balance = provider.get_balance(safe_address, Some(latest.into())).await?;
     let code = provider.get_code(safe_address, Some(latest.into())).await?;
 
+    let account_node: Vec<u8> = vec![
+        &nonce.as_u64().to_be_bytes(),           // 8 bytes
+        &balance.as_u128().to_be_bytes()[4..16], // 12 bytes
+        proof.storage_hash.as_bytes(),           // 32 bytes
+        keccak256(code).as_bytes()               // 32 bytes
+    ].into_iter().flatten().map(|b| *b).collect();
     let storage_proof_depth =  proof.storage_proof[0].proof.len();
     let account_proof_depth =  proof.account_proof.len();
 
@@ -77,13 +83,6 @@ pub async fn fetch_inputs(
         MAX_TRIE_NODE_LENGTH, 
         MAX_STORAGE_VALUE_LENGTH
     ).expect("TODO");
-
-    let account_node: Vec<u8> = vec![
-        &nonce.as_u64().to_be_bytes(), // 8 bytes
-        &balance.as_u128().to_be_bytes()[4..16], // 12 bytes
-        proof.storage_hash.as_bytes(), // 32 bytes
-        keccak256(code).as_bytes() // 32 bytes
-    ].into_iter().flatten().map(|b| *b).collect();
 
     let Padded {
         proof: padded_account_proof,
@@ -105,8 +104,6 @@ pub async fn fetch_inputs(
             header_rlp: rlp_encode_header(&block),
             state_root: block.state_root.into(),
             storage_root: proof.storage_hash.into(),
-            // state_trie_key: keccak256(&safe_address),
-            // storage_trie_key: keccak256(&storage_key),
             storage_key: storage_key,
             account_proof_depth,
             storage_proof_depth,
@@ -163,58 +160,14 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
     out
 }
 
-// / Left-pads zeros while writing the new head index into the first two bytes.
-/// Right-pads zeros up to a length of 7448.
-fn fixed_size_proof(proof: &[Bytes]) -> [u8; 7448] {
-    let vsa = proof
-        .iter()
-        .map(|b| b.as_bytes().to_vec())
-        .flatten()
-        .map(|b| b as u8) //
-        .collect::<Vec<u8>>();
-    let mut fsa: [u8; 7448] = [0; 7448];
-    // let idx = 4094_u16 - vsa.len() as u16 + 2_u16;
-    // let idx_le = idx.to_le_bytes();
-    // fsa[0] = idx_le[0] as u8;
-    // fsa[1] = idx_le[1] as u8;
-    // fsa[(idx as usize)..7448].copy_from_slice(&vsa);
-    fsa[0..vsa.len()].copy_from_slice(&vsa);
-    fsa
-}
-
-//////////
-
-
-
 /// Trie proof padding struct mirroring the equivalent Noir code
 pub struct Padded
 {
-    // /// Unhashed key
-    // key: Vec<u8>,
     /// Flat RLP-encoded proof with appropriate padding
     proof: Vec<u8>,
-    // /// Actual proof depth
-    // depth: usize,
     /// The value resolved by the proof
     value: Vec<u8>,
 }
-
-// impl TrieProof
-// {
-//     /// Proof Toml string formatter. Returns a string with the table entries corresponding to a `TrieProof`.
-//     ///
-//     /// # Arguments
-//     /// * `tp` - A reference to a trie proof
-//     pub fn to_toml_string(&self, proof_name: &str) -> String
-//     {
-//         // Print Toml string
-//         format!(
-//             "[{}]\nkey = {:#04x?}\nproof = {:#04x?}\ndepth = {:#04x?}\nvalue = {:#04x?}",
-//             proof_name, self.key, self.proof, self.depth, self.value
-//         )
-//     }
-// }
-
 
 /// Trie proof preprocessor. Returns a proof suitable for use in a Noir program using the noir-trie-proofs library.
 /// Note: Depending on the application, the `value` field of the struct may have to be further processed, e.g.
@@ -277,9 +230,7 @@ pub fn preprocess_proof(
     let padded_value = left_pad(&value, max_value_len)?;
 
     Ok(Padded {
-        // key,
         proof: padded_proof,
-        // depth,
         value: padded_value,
     })
 }
