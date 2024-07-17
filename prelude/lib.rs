@@ -60,18 +60,28 @@ pub async fn fetch_inputs(
     let proof = provider
         .get_proof(safe_address, vec![storage_key.into()], Some(latest.into()))
         .await?;
-    let nonce = provider.get_transaction_count(safe_address, Some(latest.into())).await?;
-    let balance = provider.get_balance(safe_address, Some(latest.into())).await?;
-    let code = provider.get_code(safe_address, Some(latest.into())).await?;
+    // let nonce = provider.get_transaction_count(safe_address, Some(latest.into())).await?;
+    // let balance = provider.get_balance(safe_address, Some(latest.into())).await?;
+    // let code = provider.get_code(safe_address, Some(latest.into())).await?;
 
-    let account_node: Vec<u8> = vec![
-        &nonce.as_u64().to_be_bytes(),           // 8 bytes
-        &balance.as_u128().to_be_bytes()[4..16], // 12 bytes
-        proof.storage_hash.as_bytes(),           // 32 bytes
-        keccak256(code).as_bytes()               // 32 bytes
-    ].into_iter().flatten().map(|b| *b).collect();
+    // let account_value: Vec<u8> = vec![
+    //     &nonce.as_u64().to_be_bytes(),           // 8 bytes
+    //     &balance.as_u128().to_be_bytes()[4..16], // 12 bytes
+    //     proof.storage_hash.as_bytes(),           // 32 bytes
+    //     keccak256(code).as_bytes()               // 32 bytes
+    // ].into_iter().flatten().map(|b| *b).collect();
     // let storage_proof_depth =  proof.storage_proof[0].proof.len();
     // let account_proof_depth =  proof.account_proof.len();
+
+    let account_value = rlp::Rlp::new(
+        &proof.account_proof
+            .last() // Terminal proof node
+            .ok_or("State proof empty").expect("TODO"),
+    ) // Proof should have been non-empty
+        .as_list::<Vec<u8>>()?
+        .last() // Extract value
+        .ok_or("RLP list empty").expect("TODO")
+        .to_vec();
 
     let TrieProof {
         proof: padded_storage_proof,
@@ -94,8 +104,8 @@ pub async fn fetch_inputs(
         key: account_key
     } = preprocess_proof(
         &proof.account_proof,
-        safe_address.as_bytes().into(), 
-        account_node,
+        safe_address.as_bytes().to_vec(), 
+        account_value,
         ACCOUNT_PROOF_MAX_DEPTH, 
         MAX_TRIE_NODE_LENGTH, 
         MAX_ACCOUNT_STATE_LENGTH
