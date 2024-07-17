@@ -104,7 +104,8 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
     out
 }
 
-/// Left-pads zeros while writing the new head index into the first two bytes.
+// / Left-pads zeros while writing the new head index into the first two bytes.
+/// Right-pads zeros up to a length of 4096.
 fn fixed_size_proof(proof: &[Bytes]) -> [u8; 4096] {
     let vsa = proof
         .iter()
@@ -113,10 +114,11 @@ fn fixed_size_proof(proof: &[Bytes]) -> [u8; 4096] {
         .map(|b| b as u8) //
         .collect::<Vec<u8>>();
     let mut fsa: [u8; 4096] = [0; 4096];
-    let idx = 4094_u16 - vsa.len() as u16 + 2_u16;
-    let idx_le = idx.to_le_bytes();
-    fsa[0] = idx_le[0] as u8;
-    fsa[1] = idx_le[1] as u8;
-    fsa[(idx as usize)..4096].copy_from_slice(&vsa);
+    // let idx = 4094_u16 - vsa.len() as u16 + 2_u16;
+    // let idx_le = idx.to_le_bytes();
+    // fsa[0] = idx_le[0] as u8;
+    // fsa[1] = idx_le[1] as u8;
+    // fsa[(idx as usize)..4096].copy_from_slice(&vsa);
+    fsa[0..vsa.len()].copy_from_slice(&vsa);
     fsa
 }

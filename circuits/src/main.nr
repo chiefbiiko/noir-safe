@@ -19,14 +19,14 @@ fn main(
     storage_proof: [u8; 4096],
     header_rlp: [u8; 590]
 ) {
-    let sp_idx = storage_proof[0] as u16 + (storage_proof[1] << 8) as u16;
-    let ap_idx = account_proof[0] as u16 + (account_proof[1] << 8) as u16;
-    let sp = tail(storage_proof, sp_idx);
-    let ap = tail(account_proof, ap_idx);
+    // let sp_idx = storage_proof[0] as u16 + (storage_proof[1] << 8) as u16;
+    // let ap_idx = account_proof[0] as u16 + (account_proof[1] << 8) as u16;
+    // let sp = tail(storage_proof, sp_idx);
+    // let ap = tail(account_proof, ap_idx);
 
     let stp = TrieProof {
         key: storage_trie_key,
-        proof: sp.as_array(),
+        proof: storage_proof, //sp.as_array(),
         depth: STORAGE_PROOF_MAX_DEPTH,
         value: SAFE_SIGNED_MSG_VALUE
     };
@@ -34,13 +34,13 @@ fn main(
     //TODO TrieProof::verify_state_root()
 }
 
-fn tail(arr: [u8; 4096], offset: u16) -> [u8] {
-    let mut slice = &[];
-    for i in 0..(4096 - offset) {
-        slice = slice.push_back(arr[i + offset]);
-    }
-    slice
-}
+// fn tail(arr: [u8; 4096], offset: u16) -> [u8] {
+//     let mut slice = &[];
+//     for i in 0..(4096 - offset) {
+//         slice = slice.push_back(arr[i + offset]);
+//     }
+//     slice
+// }
 
 //FIXME how2 test with PRover.toml
 // #[test]
