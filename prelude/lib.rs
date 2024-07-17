@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use ethers::{
     providers::{Middleware, Provider},
     types::{Address, Block, Bytes, H256},
@@ -13,8 +13,9 @@ pub const SAFE_SIGNED_MESSAGES_SLOT: [u8; 32] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,
 ];
 /// SEE https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/libraries/SignMessageLib.sol#L24
-pub const SAFE_SIGNED_MSG_VALUE: [u8; 32] =
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+pub const SAFE_SIGNED_MSG_VALUE: [u8; 32] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+];
 
 /// FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
 const ACCOUNT_PROOF_MAX_DEPTH: usize = 14;
@@ -29,21 +30,21 @@ const MAX_ACCOUNT_STATE_LENGTH: usize = 134;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Inputs {
-    pub safe_address: [u8; 20],                                              // Safe address
-    pub msg_hash: [u8; 32],                                                  // Custom msg hash
-    pub state_root: [u8; 32],                                                // eth_getBlockBy*::stateRoot
-    pub storage_root: [u8; 32],                                              // eth_getProof::storageHash
-    pub storage_key: [u8; 32],                                               // keccak256(msg_hash + uint256(7))
-    pub account_proof_depth: usize,                                          // eth_getProof::accountProof.len()
-    pub storage_proof_depth: usize,                                          // eth_getProof::storageProof.proof.len()
+    pub safe_address: [u8; 20],     // Safe address
+    pub msg_hash: [u8; 32],         // Custom msg hash
+    pub state_root: [u8; 32],       // eth_getBlockBy*::stateRoot
+    pub storage_root: [u8; 32],     // eth_getProof::storageHash
+    pub storage_key: [u8; 32],      // keccak256(msg_hash + uint256(7))
+    pub account_proof_depth: usize, // eth_getProof::accountProof.len()
+    pub storage_proof_depth: usize, // eth_getProof::storageProof.proof.len()
     #[serde(with = "serde_arrays")]
-    pub padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],                // preprocess_proof()::value
+    pub padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH], // preprocess_proof()::value
     #[serde(with = "serde_arrays")]
     pub account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH], // eth_getProof::accountProof
     #[serde(with = "serde_arrays")]
     pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH], // eth_getProof::storageProof.proof
     #[serde(with = "serde_arrays")]
-    pub header_rlp: [u8; 590],                                               // RLP-encoded header
+    pub header_rlp: [u8; 590], // RLP-encoded header
 }
 
 pub async fn fetch_inputs(
@@ -61,42 +62,45 @@ pub async fn fetch_inputs(
         .await?;
 
     let account_value = rlp::Rlp::new(
-        &proof.account_proof
+        &proof
+            .account_proof
             .last() // Terminal proof node
-            .ok_or("State proof empty").expect("TODO"),
+            .ok_or(anyhow!("State proof empty"))?,
     ) // Proof should have been non-empty
-        .as_list::<Vec<u8>>()?
-        .last() // Extract value
-        .ok_or("RLP list empty").expect("TODO")
-        .to_vec();
+    .as_list::<Vec<u8>>()?
+    .last() // Extract value
+    .ok_or(anyhow!("RLP list empty"))?
+    .to_vec();
 
     let TrieProof {
         proof: padded_storage_proof,
         value: _,
         depth: storage_proof_depth,
-        key: _ 
+        key: _,
     } = preprocess_proof(
         &proof.storage_proof[0].proof,
-        storage_key.to_vec(), 
-        SAFE_SIGNED_MSG_VALUE.to_vec(), 
-        STORAGE_PROOF_MAX_DEPTH, 
-        MAX_TRIE_NODE_LENGTH, 
-        MAX_STORAGE_VALUE_LENGTH
-    ).expect("TODO");
+        storage_key.to_vec(),
+        SAFE_SIGNED_MSG_VALUE.to_vec(),
+        STORAGE_PROOF_MAX_DEPTH,
+        MAX_TRIE_NODE_LENGTH,
+        MAX_STORAGE_VALUE_LENGTH,
+    )
+    .map_err(|_| anyhow!("Preprocess storage proof"))?;
 
     let TrieProof {
         proof: padded_account_proof,
         value: padded_account_value,
         depth: account_proof_depth,
-        key: _
+        key: _,
     } = preprocess_proof(
         &proof.account_proof,
-        safe_address.as_bytes().to_vec(), 
+        safe_address.as_bytes().to_vec(),
         account_value,
-        ACCOUNT_PROOF_MAX_DEPTH, 
-        MAX_TRIE_NODE_LENGTH, 
-        MAX_ACCOUNT_STATE_LENGTH
-    ).expect("TODO");
+        ACCOUNT_PROOF_MAX_DEPTH,
+        MAX_TRIE_NODE_LENGTH,
+        MAX_ACCOUNT_STATE_LENGTH,
+    )
+    .map_err(|_| anyhow!("Preprocess account proof"))?;
 
     Ok((
         latest.as_u64(),
@@ -109,9 +113,15 @@ pub async fn fetch_inputs(
             storage_key,
             account_proof_depth,
             storage_proof_depth,
-            padded_account_value: padded_account_value.try_into().expect("padded account value"),
-            account_proof: padded_account_proof.try_into().expect("padded account proof"),
-            storage_proof: padded_storage_proof.try_into().expect("padded storage proof"),
+            padded_account_value: padded_account_value
+                .try_into()
+                .map_err(|_| anyhow!("padded account value"))?,
+            account_proof: padded_account_proof
+                .try_into()
+                .map_err(|_| anyhow!("padded account proof"))?,
+            storage_proof: padded_storage_proof
+                .try_into()
+                .map_err(|_| anyhow!("padded storage proof"))?,
         },
     ))
 }
@@ -163,8 +173,7 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
 }
 
 /// Trie proof struct mirroring the equivalent Noir code
-pub struct TrieProof
-{
+pub struct TrieProof {
     /// Unhashed key
     key: Vec<u8>,
     /// Flat RLP-encoded proof with appropriate padding
@@ -193,8 +202,7 @@ pub fn preprocess_proof(
     max_depth: usize,
     max_node_len: usize,
     max_value_len: usize,
-) -> Result<TrieProof, Box<dyn std::error::Error>>
-{
+) -> Result<TrieProof, Box<dyn std::error::Error>> {
     // Depth of trie proof
     let depth = proof.len();
 
@@ -204,8 +212,7 @@ pub fn preprocess_proof(
         .into_iter()
         .map(|b| b.to_vec()) // Convert Bytes to Vec<u8>
         .chain({
-            let depth_excess = if depth <= max_depth
-            {
+            let depth_excess = if depth <= max_depth {
                 Ok(max_depth - depth)
             } else {
                 Err(format!(
@@ -218,8 +225,7 @@ pub fn preprocess_proof(
         })
         .map(|mut v| {
             let node_len = v.len();
-            let len_excess = if node_len <= max_node_len
-            {
+            let len_excess = if node_len <= max_node_len {
                 Ok(max_node_len - node_len)
             } else {
                 Err("Node length cannot exceed the given maximum.")
@@ -248,10 +254,8 @@ pub fn preprocess_proof(
 /// # Arguments
 /// * `v` - Byte vector
 /// * `max_len` - Desired size of padded vector
-fn left_pad(v: &Vec<u8>, max_len: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>>
-{
-    if v.len() > max_len
-    {
+fn left_pad(v: &Vec<u8>, max_len: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    if v.len() > max_len {
         Err(format!("The vector exceeds its maximum expected dimensions.").into())
     } else {
         let mut v_r = v.clone();

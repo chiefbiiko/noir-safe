@@ -42,10 +42,11 @@ fn main(
     let _ = atp.verify_state_root(state_root);
 
     //TODO calc challenge and blockhash
+
 }
 
 //FINDOUT how2 test with(out) Prover.toml ?
 // #[test]
-// fn test_circuit() {
-//     main(FIXTURE_OK);
+// fn test_main() {
+//     main(1, 2);
 // }
