@@ -1,5 +1,4 @@
 use dep::noir_trie_proofs::trie_proof::TrieProof;
-use dep::noir_trie_proofs::{state_proof::StateProof, storage_proof::StorageProof};
 
 ///FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
 global ACCOUNT_PROOF_MAX_DEPTH = 14;
