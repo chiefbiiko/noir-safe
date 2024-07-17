@@ -25,7 +25,7 @@ fn main(
     storage_proof_depth: u64,
     padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
     account_proof: [u8; 7448],
-    storage_proof: [u8; 7448],
+    storage_proof: [u8; 6916],
     header_rlp: [u8; 590]
 ) {
     let stp = TrieProof {
