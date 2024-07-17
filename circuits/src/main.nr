@@ -20,6 +20,7 @@ fn main(
     state_root: [u8; 32],
     storage_root: [u8; 32],
     // state_trie_key: [u8; 32],
+    account_key: [u8; 20],
     storage_key: [u8; 32],
     account_proof_depth: u64,
     storage_proof_depth: u64,
@@ -36,13 +37,13 @@ fn main(
     };
     let _ = stp.verify_storage_root(storage_root);
 
-    // let atp = TrieProof {
-    //     key: safe_address,
-    //     proof: account_proof,
-    //     depth: account_proof_depth,
-    //     value: padded_account_value
-    // };
-    // let _ = atp.verify_state_root(state_root);
+    let atp = TrieProof {
+        key: account_key,
+        proof: account_proof,
+        depth: account_proof_depth,
+        value: padded_account_value
+    };
+    let _ = atp.verify_state_root(state_root);
 
     //TODO calc challenge and blockhash
 }

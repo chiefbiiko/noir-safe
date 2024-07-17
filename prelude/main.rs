@@ -1,5 +1,6 @@
-// use const_hex;
-// use noir_safe_prelude::fetch_inputs;
+use const_hex;
+use noir_safe_prelude::fetch_inputs;
+use std::io::Write;
 
 #[tokio::main]
 async fn main() {
@@ -13,11 +14,14 @@ async fn main() {
     )
     .expect("env var MSG_HASH");
 
-    let (anchor, inputs) = noir_safe_prelude::fetch_inputs(&rpc, safe.into(), msg_hash.into())
+    let (anchor, inputs) = fetch_inputs(&rpc, safe.into(), msg_hash.into())
         .await
         .expect("fetch_inputs failed");
 
-    let prover_toml = toml::to_string(&inputs).expect("toml");
-    std::fs::write("../circuits/Prover.toml", &prover_toml).expect("prover toml");
-    println!("anchor {}\nProver.toml {:?}", anchor, &prover_toml);
+    let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
+    let prover_toml = toml::to_string(&inputs).expect("prover toml pt1");
+    let mut file = std::fs::File::create(format!("{}/../circuits/Prover.toml", cargo_manifest_dir)).expect("prover toml pt2");
+    file.write_all(prover_toml.as_bytes()).expect("prover toml pt3");
+
+    println!("anchor {} circuits/Prover.toml refreshed", anchor);
 }
