@@ -4,9 +4,13 @@
 
 Prove a Safe multisig over a message in zk
 
-**WIP WIP WIP**
+## WIP
 
-- FIXME sometimes header_rlp byte_len != 590
+- split circuit into two halves each verifying one of account and storage proof
+- aggregate both sub circuits in a recursive proof
+
+<!-- 
+- FIXME sometimes header_rlp byte_len != 590 -->
 
 <!-- ## Commands
 
