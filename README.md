@@ -2,12 +2,17 @@
 
 [![ci](https://github.com/chiefbiiko/noir-safe/workflows/ci/badge.svg)](https://github.com/chiefbiiko/noir-safe/actions/workflows/ci.yml) [![release](https://img.shields.io/github/v/release/chiefbiiko/noir-safe?include_prereleases)](https://github.com/chiefbiiko/noir-safe/releases/latest)
 
-Prove a Safe multisig over a message in zk
+Safe zk multisig
 
-## WIP
+**WIP**
 
-- split circuit into two halves each verifying one of account and storage proof
-- aggregate both sub circuits in a recursive proof
+```sh
+nargo check
+nargo execute
+nargo prove
+nargo verify
+nargo --help
+```
 
 <!-- 
 - FIXME sometimes header_rlp byte_len != 590 -->
@@ -26,10 +31,4 @@ RUST_BACKTRACE=full \
 
 Nargo:
 
-```sh
-nargo check
-nargo execute
-nargo prove
-nargo verify
-nargo --help
-``` -->
+ -->
