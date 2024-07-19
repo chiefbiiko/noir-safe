@@ -1,0 +1,8 @@
+[package]
+name = "noir_safe_account_proof_circuit"
+type = "bin"
+authors = ["chiefbiiko"]
+compiler_version = ">=0.30.0"
+
+[dependencies]
+noir_trie_proofs = { git = "https://github.com/aragonzkresearch/noir-trie-proofs", tag = "main", directory = "lib" }

@@ -1,5 +1,5 @@
 [package]
-name = "circuits"
+name = "noir_safe_storage_proof_circuit"
 type = "bin"
 authors = ["chiefbiiko"]
 compiler_version = ">=0.30.0"

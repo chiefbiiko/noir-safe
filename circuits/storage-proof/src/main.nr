@@ -12,16 +12,17 @@ global MAX_TRIE_NODE_LENGTH = 532;
 /// Maximum size of the RLP-encoded list representing an account state
 global MAX_ACCOUNT_STATE_LENGTH = 134;
 
+#[recursive]
 fn main(
     safe_address: [u8; 20],
     msg_hash: [u8; 32],
-    state_root: [u8; 32],
+    // state_root: [u8; 32],
     storage_root: [u8; 32],
     storage_key: [u8; 32],
-    account_proof_depth: u64,
+    // account_proof_depth: u64,
     storage_proof_depth: u64,
-    padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
-    account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH],
+    // padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
+    // account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH],
     storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH],
     header_rlp: [u8; 590]
 ) {
@@ -33,13 +34,13 @@ fn main(
     };
     let _ = stp.verify_storage_root(storage_root);
 
-    let atp = TrieProof {
-        key: safe_address,
-        proof: account_proof,
-        depth: account_proof_depth,
-        value: padded_account_value
-    };
-    let _ = atp.verify_state_root(state_root);
+    // let atp = TrieProof {
+    //     key: safe_address,
+    //     proof: account_proof,
+    //     depth: account_proof_depth,
+    //     value: padded_account_value
+    // };
+    // let _ = atp.verify_state_root(state_root);
 
     //TODO calc challenge and blockhash
 

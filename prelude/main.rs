@@ -20,10 +20,14 @@ async fn main() {
 
     let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
     let prover_toml = toml::to_string(&inputs).expect("prover toml pt1");
-    let mut file = std::fs::File::create(format!("{}/../circuits/Prover.toml", cargo_manifest_dir))
-        .expect("prover toml pt2");
-    file.write_all(prover_toml.as_bytes())
-        .expect("prover toml pt3");
+    let mut ap_prover_file = std::fs::File::create(format!("{}/../circuits/account-proof/Prover.toml", cargo_manifest_dir))
+        .expect("ap_prover_file");
+    ap_prover_file.write_all(prover_toml.as_bytes())
+        .expect("ap_prover_file write");
+    let mut sp_prover_file = std::fs::File::create(format!("{}/../circuits/storage-proof/Prover.toml", cargo_manifest_dir))
+        .expect("sp_prover_file");
+    sp_prover_file.write_all(prover_toml.as_bytes())
+        .expect("sp_prover_file write");
 
     println!("anchor {} circuits/Prover.toml refreshed", anchor);
 }
