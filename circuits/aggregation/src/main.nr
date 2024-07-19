@@ -11,16 +11,15 @@ fn main(
     ap_pi : [Field; 1],
 ) {
     std::verify_proof(
-        ap_vk.as_slice(),
-        ap_proof.as_slice(),
-        ap_pi.as_slice(),
-        ap_vk_hash
-    );
-
-    std::verify_proof(
         sp_vk.as_slice(),
         sp_proof.as_slice(),
         sp_pi.as_slice(),
         sp_vk_hash
+    );
+    std::verify_proof(
+        ap_vk.as_slice(),
+        ap_proof.as_slice(),
+        ap_pi.as_slice(),
+        ap_vk_hash
     );
 }
