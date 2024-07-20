@@ -1,9 +1,9 @@
 #TODO
-    # sp_vk : [Field; 114],
-    # sp_vk_hash : Field,
-    # sp_proof : [Field; 93],
-    # sp_pi : [Field; 1],
-    # ap_vk : [Field; 114],
-    # ap_vk_hash : Field,
-    # ap_proof : [Field; 93],
-    # ap_pi : [Field; 1],
+# sp_vk
+# sp_vk_hash
+# sp_proof
+# sp_pi
+# ap_vk
+# ap_vk_hash
+# ap_proof
+# ap_pi

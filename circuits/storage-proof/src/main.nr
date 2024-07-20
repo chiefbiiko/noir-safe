@@ -14,8 +14,8 @@ global MAX_ACCOUNT_STATE_LENGTH = 134;
 
 #[recursive]
 fn main(
-    safe_address: [u8; 20],
-    msg_hash: [u8; 32],
+    // safe_address: [u8; 20],
+    // msg_hash: [u8; 32],
     // state_root: [u8; 32],
     storage_root: [u8; 32],
     storage_key: [u8; 32],
@@ -24,7 +24,7 @@ fn main(
     // padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
     // account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH],
     storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH],
-    header_rlp: [u8; 590]
+    // header_rlp: [u8; 590]
 ) {
     let stp = TrieProof {
         key: storage_key,
