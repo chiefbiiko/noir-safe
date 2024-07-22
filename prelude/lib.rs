@@ -20,7 +20,7 @@ pub const SAFE_SIGNED_MSG_VALUE: [u8; 32] = [
 /// FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
 const ACCOUNT_PROOF_MAX_DEPTH: usize = 7;//14;
 /// FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L116
-const STORAGE_PROOF_MAX_DEPTH: usize = 7;//13;
+const STORAGE_PROOF_MAX_DEPTH: usize = 3;//13;
 /// Maximum length of a state or storage trie node in bytes
 const MAX_TRIE_NODE_LENGTH: usize = 532;
 /// Maximum size of the value in a storage slot
