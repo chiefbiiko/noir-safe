@@ -1,4 +1,4 @@
-import { compile, createFileManager } from '@noir-lang/noir_wasm';
+// import { compile, createFileManager } from '@noir-lang/noir_wasm';
 import { BarretenbergBackend } from '@noir-lang/backend_barretenberg';
 import { Noir } from "@noir-lang/noir_js"
 import { join } from "path"
@@ -6,6 +6,7 @@ import { cpus } from 'os'
 
 const threads = cpus() // browser::navigator::hardwareConcurrency
 
+/*
 const spPath = join(import.meta.dirname, "../..", "circuits/storage-proof")
 // const apPath = join(import.meta.dirname, "../..", "circuits/account-proof")
 // const anchorPath = join(import.meta.dirname, "../..", "circuits/anchor")
@@ -13,12 +14,19 @@ const spPath = join(import.meta.dirname, "../..", "circuits/storage-proof")
 const spMeta = await compile(createFileManager(spPath));
 // const apMeta = await compile(createFileManager(apPath));
 // const anchorMeta = await compile(createFileManager(anchorPath));
+*/
 
-const spBackend = new BarretenbergBackend(spMeta.program, { threads })
+//
+const spPath = join(import.meta.dirname, "../..", "target/noir_safe_storage_proof_circuit.json")
+const { default: spCircuit } = await import(spPath, { assert: { type: "json" } })
+console.log("spCircuit", spCircuit)
+//
+
+const spBackend = new BarretenbergBackend(/*spMeta.program*/ spCircuit, { threads })
 // const apBackend = new BarretenbergBackend(apMeta.program, { threads })
 // const anchorBackend = new BarretenbergBackend(anchorMeta.program, { threads })
-//WIP
-const spNoir = new Noir(spMeta.program, spBackend)
+
+const spNoir = new Noir(/*spMeta.program*/ spCircuit, spBackend)
 const { witness: spWitness } = await spNoir.execute({
     storage_root: [47, 145, 156, 11, 102, 32, 161, 134, 242, 27, 22, 214, 31, 61, 143, 64, 68, 15, 191, 177, 1, 14, 139, 176, 0, 26, 69, 107, 27, 91, 245, 25], //TODO
     storage_key: [143, 194, 65, 183, 234, 249, 41, 244, 197, 179, 245, 189, 1, 171, 189, 194, 204, 97, 54, 138, 195, 194, 204, 169, 162, 141, 93, 65, 13, 64, 73, 213], //TODO
