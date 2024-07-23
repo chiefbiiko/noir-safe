@@ -6,6 +6,8 @@ Safe zk multisig
 
 **WIP**
 
+> Assumes noir+nargo@v0.29.0 AND bb@v0.29.0 (install with `noirup -v v0.29.0` and `bbup -v v0.29.0`)
+
 Compile all circuits
 
 ```sh
