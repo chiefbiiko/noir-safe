@@ -4,11 +4,11 @@ set -ueExo pipefail
 
 #FROM https://github.com/noir-lang/noir/blob/master/examples/recursion/generate_recursive_proof.sh
 
-#NOTE assumes noir+nargo@v0.29.0 AND bb@v0.19.0 (install with `noirup -v v0.29.0` and `bbup -v v0.19.0`)
+#NOTE assumes noir+nargo@v0.29.0 AND bb@v0.29.0 (install with `noirup -v v0.29.0` and `bbup -v v0.29.0`)
 
 #FIXME
 # + bb write_vk -b /Users/chiefbiiko/Projects/noir-safe/target/noir_safe_storage_proof_circuit.gz -o /Users/chiefbiiko/Projects/noir-safe/target/sp_vk
-# Length is too large
+# "Length is too large" - with higher bb versions the error is - "Unknown variant index for enum"
 
 #TODO run shard provers in parallel
 
