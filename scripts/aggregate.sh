@@ -7,8 +7,12 @@ set -ueExo pipefail
 
 d=$(git rev-parse --show-toplevel)
 
-nargo prove --package noir_safe_storage_proof_circuit
-nargo prove --package noir_safe_account_proof_circuit
+# nargo prove --package noir_safe_storage_proof_circuit
+# nargo prove --package noir_safe_account_proof_circuit
+#WIP
+nargo execute --package noir_safe_storage_proof_circuit sp_witness
+jq -r '.bytecode' $d/target/noir_safe_storage_proof_circuit.json | base64 -d > $d/target/noir_safe_storage_proof_circuit.bin
+bb prove -b $d/target/noir_safe_storage_proof_circuit.bin -w $d/target/sp_witness.gz -o $d/proofs/noir_safe_storage_proof_circuit.proof
 
 # generate aggregation artifacts from the storage proof circuit
 bb write_vk -b $d/target/noir_safe_storage_proof_circuit.json -o $d/target/sp_vk
