@@ -2,20 +2,25 @@
 
 set -ueExo pipefail
 
+#FROM https://github.com/noir-lang/noir/blob/master/examples/recursion/generate_recursive_proof.sh
+
+#NOTE assumes noir+nargo@v0.29.0 AND bb@v0.19.0 (install with `noirup -v v0.29.0` and `bbup -v v0.19.0`)
+
+#FIXME
+# + bb write_vk -b /Users/chiefbiiko/Projects/noir-safe/target/noir_safe_storage_proof_circuit.gz -o /Users/chiefbiiko/Projects/noir-safe/target/sp_vk
+# Length is too large
+
 #TODO run shard provers in parallel
-# https://github.com/noir-lang/noir/blob/master/examples/recursion/generate_recursive_proof.sh
 
 d=$(git rev-parse --show-toplevel)
 
-# nargo prove --package noir_safe_storage_proof_circuit
+nargo prove --package noir_safe_storage_proof_circuit
 # nargo prove --package noir_safe_account_proof_circuit
-#WIP
-nargo execute --package noir_safe_storage_proof_circuit sp_witness
-jq -r '.bytecode' $d/target/noir_safe_storage_proof_circuit.json | base64 -d > $d/target/noir_safe_storage_proof_circuit.bin
-bb prove -b $d/target/noir_safe_storage_proof_circuit.bin -w $d/target/sp_witness.gz -o $d/proofs/noir_safe_storage_proof_circuit.proof
 
-# generate aggregation artifacts from the storage proof circuit
-bb write_vk -b $d/target/noir_safe_storage_proof_circuit.json -o $d/target/sp_vk
+#WIP generate aggregation artifacts from the storage proof circuit
+jq -r '.bytecode' $d/target/noir_safe_storage_proof_circuit.json | base64 -d > $d/target/noir_safe_storage_proof_circuit.gz
+bb write_vk -b $d/target/noir_safe_storage_proof_circuit.gz -o $d/target/sp_vk
+# bb write_vk -b $d/target/noir_safe_storage_proof_circuit.json -o $d/target/sp_vk
 bb vk_as_fields -k $d/target/sp_vk -o $d/target/sp_vk_as_fields
 SP_VK_HASH=$(jq -r '.[0]' $d/target/sp_vk_as_fields)
 SP_VK_AS_FIELDS=$(jq -r '.[1:]' $d/target/sp_vk_as_fields)
@@ -24,7 +29,7 @@ SP_FULL_PROOF_AS_FIELDS="$(bb proof_as_fields -p $d/proofs/noir_safe_storage_pro
 SP_PUBLIC_INPUTS=$(echo $SP_FULL_PROOF_AS_FIELDS | jq -r '.[:4]')
 SP_PROOF_AS_FIELDS=$(echo $SP_FULL_PROOF_AS_FIELDS | jq -r '.[4:]')
 
-# generate aggregation artifacts from the account proof circuit
+#WIP generate aggregation artifacts from the account proof circuit
 bb write_vk -b $d/target/noir_safe_account_proof_circuit.json -o $d/target/ap_vk
 bb vk_as_fields -k $d/target/ap_vk -o $d/target/ap_vk_as_fields
 AP_VK_HASH=$(jq -r '.[0]' $d/target/ap_vk_as_fields)
