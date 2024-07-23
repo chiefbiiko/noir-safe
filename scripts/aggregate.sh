@@ -3,6 +3,7 @@
 set -ueExo pipefail
 
 # https://github.com/noir-lang/noir/blob/master/examples/recursion/generate_recursive_proof.sh
+#TODO run shard provers in parallel
 
 d=$(git rev-parse --show-toplevel)
 
@@ -33,6 +34,7 @@ AP_FULL_PROOF_AS_FIELDS="$(bb proof_as_fields -p $d/proofs/ap_proof -k $d/target
 AP_PUBLIC_INPUTS=$(echo $AP_FULL_PROOF_AS_FIELDS | jq -r '.[:5]')
 AP_PROOF_AS_FIELDS=$(echo $AP_FULL_PROOF_AS_FIELDS | jq -r '.[5:]')
 
+# aggregate
 AGGREGATION_PROVER_TOML=$d/circuits/aggregation/Prover.toml
 echo "sp_vk_hash = \"$SP_VK_HASH\"" > $AGGREGATION_PROVER_TOML
 echo "sp_vk = $SP_VK_AS_FIELDS"  >> $AGGREGATION_PROVER_TOML
@@ -43,11 +45,10 @@ echo "ap_vk = $AP_VK_AS_FIELDS"  >> $AGGREGATION_PROVER_TOML
 echo "ap_proof = $AP_PROOF_AS_FIELDS" >> $AGGREGATION_PROVER_TOML
 echo "ap_pi = $AP_PUBLIC_INPUTS" >> $AGGREGATION_PROVER_TOML
 
-# aggregate
 nargo execute --package noir_safe_aggregation_circuit ag_witness 
 bb prove -b $d/target/noir_safe_aggregation_circuit.json -w ./target/ag_witness.gz -o ./target/ag_proof
 
-# We finally verify that the generated recursive proof is valid.
+# verify that the generated recursive proof is valid
 bb write_vk -b ./target/noir_safe_aggregation_circuit.json -o ./target/ag_vk
 bb verify -p ./target/ag_proof -k ./target/ag_vk
 
