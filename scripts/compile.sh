@@ -20,6 +20,9 @@ $B vk_as_fields -k $D/target/ap_vk -o $D/target/ap_vk_as_fields
 AP_VK_HASH=$(jq -r '.[0]' $D/target/ap_vk_as_fields)
 AP_VK_AS_FIELDS=$(jq -r '.[1:]' $D/target/ap_vk_as_fields)
 
+jq -r '.bytecode' $D/target/noir_safe_aggregation_circuit.json | base64 -d > $D/target/noir_safe_aggregation_circuit.gz
+$B write_vk -b $D/target/noir_safe_aggregation_circuit.gz -o $D/target/ag_vk
+
 echo "sp_vk_hash = \"$SP_VK_HASH\"
 sp_vk = $SP_VK_AS_FIELDS
 ap_vk_hash = \"$AP_VK_HASH\"

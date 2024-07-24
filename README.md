@@ -50,19 +50,3 @@ Generate the Solidity verifier
 
 <!-- 
 - FIXME sometimes header_rlp byte_len != 590 -->
-
-<!-- ## Commands
-
-Fetches circuit inputs and updates `circuits/Prover.toml`:
-
-```sh
-SAFE=0x38Ba7f4....A673336EDDc \
-MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
-RUST_LOG=info \
-RUST_BACKTRACE=full \
-  cargo run --manifest-path prelude/Cargo.toml
-``` 
-
-Nargo:
-
- -->
