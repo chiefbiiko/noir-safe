@@ -1,8 +1,0 @@
-{
-  "type": "module",
-  "dependencies": {
-    "@noir-lang/backend_barretenberg": "0.32.0",
-    "@noir-lang/noir_js": "0.32.0",
-    "@noir-lang/noir_wasm": "0.32.0"
-  }
-}
