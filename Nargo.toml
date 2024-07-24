@@ -1,3 +1,3 @@
 [workspace]
-members = ["circuits/account-proof", "circuits/storage-proof", "circuits/aggregation"]
+members = ["circuits/account_proof", "circuits/storage_proof", "circuits/aggregation"]
 default-member = "circuits/aggregation"

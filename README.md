@@ -23,7 +23,10 @@ Compile all circuits
 
 Fetch and preprocess inputs
 
+> To sign a msg via a Safe and obtain the msg hash use the scripts within `scripts/safe`
+
 ```sh
+RPC=https://rpc.gnosis.gateway.fm \
 SAFE=0x38Ba7f...673336EDDc \
 MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
   cargo run --manifest-path prelude/Cargo.toml
