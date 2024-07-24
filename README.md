@@ -18,7 +18,7 @@ noirup -v v0.29.0
 Compile all circuits
 
 ```sh
-nargo compile --workspace
+./scripts/compile.sh
 ```
 
 Fetch and preprocess inputs
