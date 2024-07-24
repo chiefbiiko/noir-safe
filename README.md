@@ -6,7 +6,14 @@ Safe zk multisig
 
 **WIP**
 
-> Assumes noir+nargo@v0.29.0 AND bb@v0.29.0 (install with `noirup -v v0.29.0` and `bbup -v v0.29.0`)
+Install tooling
+
+```sh
+# install noirup
+curl -L https://raw.githubusercontent.com/noir-lang/noirup/main/install | bash
+# install nargo and the acvm-backend-barretenberg
+noirup -v v0.29.0
+```
 
 Compile all circuits
 
