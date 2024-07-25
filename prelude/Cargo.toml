@@ -16,6 +16,8 @@ serde = { version = "1.0.196", features = ["derive"] }
 tiny-keccak = "2.0.2"
 
 anyhow = "1.0.81"
+ark-bn254 = "0.4.0"
+ark-ff = "0.4.0"
 ethers = "2.0.13"
 rlp = { version = "0.5", features = ["derive"] }
 zerocopy = "0.7.32"

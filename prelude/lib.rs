@@ -1,4 +1,6 @@
 use anyhow::{anyhow, Context, Result};
+use ark_bn254::Fr;
+use ark_ff::{BigInteger, PrimeField};
 use ethers::{
     providers::{Middleware, Provider},
     types::{Address, Block, Bytes, H256},
@@ -18,9 +20,9 @@ pub const SAFE_SIGNED_MSG_VALUE: [u8; 32] = [
 ];
 
 /// FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
-const ACCOUNT_PROOF_MAX_DEPTH: usize = 7;//14;
+const ACCOUNT_PROOF_MAX_DEPTH: usize = 7; //14;
 /// FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L116
-const STORAGE_PROOF_MAX_DEPTH: usize = 3;//13;
+const STORAGE_PROOF_MAX_DEPTH: usize = 3; //13;
 /// Maximum length of a state or storage trie node in bytes
 const MAX_TRIE_NODE_LENGTH: usize = 532;
 /// Maximum size of the value in a storage slot
@@ -68,9 +70,17 @@ pub struct AnchorShardInputs {
 
 impl From<Inputs> for AnchorShardInputs {
     fn from(inputs: Inputs) -> Self {
+        let safe_address_fe = Fr::from_be_bytes_mod_order(&lpad_bytes32(&inputs.safe_address))
+            .into_bigint()
+            .to_bytes_be();
+        let msg_hash_fe = Fr::from_be_bytes_mod_order(&inputs.msg_hash)
+            .into_bigint()
+            .to_bytes_be();
         AnchorShardInputs {
-            safe_address: const_hex::encode(lpad_bytes32(&inputs.safe_address)),
-            msg_hash: const_hex::encode(inputs.msg_hash),
+            // safe_address: const_hex::encode(lpad_bytes32(&inputs.safe_address)),
+            // msg_hash: const_hex::encode(inputs.msg_hash),
+            safe_address: format!("0x{}", const_hex::encode(safe_address_fe)),
+            msg_hash: format!("0x{}", const_hex::encode(msg_hash_fe)),
             state_root: inputs.state_root,
             storage_root: inputs.storage_root,
             storage_key: inputs.storage_key,
