@@ -24,11 +24,19 @@ AP_FULL_PROOF_AS_FIELDS="$($B proof_as_fields -p $D/proofs/noir_safe_account_pro
 
 ###
 
+nargo prove --package noir_safe_anchor_circuit
+xxd -r -p $D/proofs/noir_safe_anchor_circuit.proof $D/proofs/noir_safe_anchor_circuit.proof.bin
+AN_FULL_PROOF_AS_FIELDS="$($B proof_as_fields -p $D/proofs/noir_safe_anchor_circuit.proof.bin -k $D/target/an_vk -o -)"
+
+###
+
 cat $VK_TOML > $AGGREGATION_PROVER_TOML
 echo "sp_proof = $SP_FULL_PROOF_AS_FIELDS
 sp_pi = []
 ap_proof = $AP_FULL_PROOF_AS_FIELDS
 ap_pi = []
+an_proof = $AN_FULL_PROOF_AS_FIELDS
+an_pi = []
 " >> $AGGREGATION_PROVER_TOML
 
 nargo prove --package noir_safe_aggregation_circuit
