@@ -48,7 +48,7 @@ pub struct Inputs {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AnchorInputs {
+pub struct AnchorShardInputs {
     pub safe_address: String,       // Safe address in hex
     pub msg_hash: String,           // Custom msg hash in hex
     pub state_root: [u8; 32],       // eth_getBlockBy*::stateRoot
@@ -66,12 +66,20 @@ pub struct AnchorInputs {
     pub header_rlp: [u8; 590], // RLP-encoded header
 }
 
-impl From<Inputs> for AnchorInputs {
+impl From<Inputs> for AnchorShardInputs {
     fn from(inputs: Inputs) -> Self {
-        AnchorInputs {
+        AnchorShardInputs {
             safe_address: const_hex::encode(lpad_bytes32(&inputs.safe_address)),
-            msg_hash: const_hex::encode(&inputs.msg_hash),
-            ..inputs.into()
+            msg_hash: const_hex::encode(inputs.msg_hash),
+            state_root: inputs.state_root,
+            storage_root: inputs.storage_root,
+            storage_key: inputs.storage_key,
+            account_proof_depth: inputs.account_proof_depth,
+            storage_proof_depth: inputs.storage_proof_depth,
+            padded_account_value: inputs.padded_account_value,
+            account_proof: inputs.account_proof,
+            storage_proof: inputs.storage_proof,
+            header_rlp: inputs.header_rlp,
         }
     }
 }
