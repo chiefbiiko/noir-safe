@@ -28,6 +28,10 @@ async fn main() {
         .expect("sp_prover_file");
     sp_prover_file.write_all(prover_toml.as_bytes())
         .expect("sp_prover_file write");
+    let mut an_prover_file = std::fs::File::create(format!("{}/../circuits/anchor/Prover.toml", cargo_manifest_dir))
+        .expect("an_prover_file");
+    an_prover_file.write_all(prover_toml.as_bytes())
+        .expect("an_prover_file write");
 
-    println!("anchor {} circuits/Prover.toml refreshed", anchor);
+    println!("anchor block number {} - Prover.toml files refreshed", anchor);
 }
