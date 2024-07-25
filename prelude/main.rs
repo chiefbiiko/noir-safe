@@ -1,5 +1,5 @@
 use const_hex;
-use noir_safe_prelude::fetch_inputs;
+use noir_safe_prelude::{fetch_inputs, AnchorInputs};
 use std::io::Write;
 
 #[tokio::main]
@@ -19,7 +19,9 @@ async fn main() {
         .expect("fetch_inputs failed");
 
     let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
-    let prover_toml = toml::to_string(&inputs).expect("prover toml pt1");
+    let anchor_inputs = AnchorInputs::from(inputs.clone());
+    let prover_toml = toml::to_string(&inputs).expect("prover toml");
+    let anchor_prover_toml = toml::to_string(&anchor_inputs).expect("anchor prover toml");
     let mut ap_prover_file = std::fs::File::create(format!("{}/../circuits/account-proof/Prover.toml", cargo_manifest_dir))
         .expect("ap_prover_file");
     ap_prover_file.write_all(prover_toml.as_bytes())
@@ -30,7 +32,7 @@ async fn main() {
         .expect("sp_prover_file write");
     let mut an_prover_file = std::fs::File::create(format!("{}/../circuits/anchor/Prover.toml", cargo_manifest_dir))
         .expect("an_prover_file");
-    an_prover_file.write_all(prover_toml.as_bytes())
+    an_prover_file.write_all(anchor_prover_toml.as_bytes())
         .expect("an_prover_file write");
 
     println!("anchor block number {} - Prover.toml files refreshed", anchor);

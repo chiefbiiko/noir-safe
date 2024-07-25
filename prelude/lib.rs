@@ -47,6 +47,35 @@ pub struct Inputs {
     pub header_rlp: [u8; 590], // RLP-encoded header
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AnchorInputs {
+    pub safe_address: String,       // Safe address in hex
+    pub msg_hash: String,           // Custom msg hash in hex
+    pub state_root: [u8; 32],       // eth_getBlockBy*::stateRoot
+    pub storage_root: [u8; 32],     // eth_getProof::storageHash
+    pub storage_key: [u8; 32],      // keccak256(msg_hash + uint256(7))
+    pub account_proof_depth: usize, // eth_getProof::accountProof.len()
+    pub storage_proof_depth: usize, // eth_getProof::storageProof.proof.len()
+    #[serde(with = "serde_arrays")]
+    pub padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH], // preprocess_proof()::value
+    #[serde(with = "serde_arrays")]
+    pub account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH], // eth_getProof::accountProof
+    #[serde(with = "serde_arrays")]
+    pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH], // eth_getProof::storageProof.proof
+    #[serde(with = "serde_arrays")]
+    pub header_rlp: [u8; 590], // RLP-encoded header
+}
+
+impl From<Inputs> for AnchorInputs {
+    fn from(inputs: Inputs) -> Self {
+        AnchorInputs {
+            safe_address: const_hex::encode(lpad_bytes32(&inputs.safe_address)),
+            msg_hash: const_hex::encode(&inputs.msg_hash),
+            ..inputs.into()
+        }
+    }
+}
+
 pub async fn fetch_inputs(
     rpc: &str,
     safe_address: Address,
@@ -157,6 +186,10 @@ pub fn rlp_encode_header(block: &Block<H256>) -> [u8; 590] {
     ); // cancun
     let bytes: Vec<u8> = rlp.out().freeze().into();
     bytes.try_into().expect("header_rlp")
+}
+
+pub fn lpad_bytes32(x: &[u8; 20]) -> [u8; 32] {
+    core::array::from_fn(|i| if i < 12 { 0u8 } else { x[i - 12] })
 }
 
 pub fn concat_bytes64(a: [u8; 32], b: [u8; 32]) -> [u8; 64] {
