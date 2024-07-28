@@ -20,6 +20,7 @@ ark-bn254 = "0.4.0"
 ark-ff = "0.4.0"
 ethers = "2.0.13"
 rlp = { version = "0.5", features = ["derive"] }
+light-poseidon = "0.2.0"
 zerocopy = "0.7.32"
 
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros"] }

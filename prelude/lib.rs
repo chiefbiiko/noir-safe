@@ -6,6 +6,7 @@ use ethers::{
     types::{Address, Block, Bytes, H256},
 };
 use rlp::RlpStream;
+use light_poseidon::{Poseidon, PoseidonHasher};
 use serde::{Deserialize, Serialize};
 use tiny_keccak::{Hasher, Keccak};
 use zerocopy::AsBytes;
@@ -66,21 +67,33 @@ pub struct AnchorShardInputs {
     pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH], // eth_getProof::storageProof.proof
     #[serde(with = "serde_arrays")]
     pub header_rlp: [u8; 590], // RLP-encoded header
+    // precalculated outputs as bn254 field elements in 0x prefixed hex
+    pub blockhash: String,
+    pub challenge: String,
 }
 
 impl From<Inputs> for AnchorShardInputs {
     fn from(inputs: Inputs) -> Self {
-        let safe_address_fe = Fr::from_be_bytes_mod_order(&lpad_bytes32(&inputs.safe_address))
+        let blockhash = keccak256(inputs.header_rlp);
+        let mut poseidon = Poseidon::<Fr>::new_circom(2).expect("poseidon init failed");
+        // _mod_order might reduce msg_hash_fe i.e. it has 2 preimages aka collision;
+        // since the 20-byte Safe address cannot exceed bn254's scalar field _mod_order
+        // is always a noop for safe_address_fe, i.e. it has strictly 1 address preimage: 
+        // no collisions; consequently "cross-account" collisions can never occur
+        let safe_address_fe = Fr::from_be_bytes_mod_order(&lpad_bytes32(&inputs.safe_address));
+        let msg_hash_fe = Fr::from_be_bytes_mod_order(&inputs.msg_hash);
+        let challenge: [u8; 32] = poseidon
+            .hash(&[safe_address_fe, msg_hash_fe])
+            .expect("poseidon hash failed")
             .into_bigint()
-            .to_bytes_be();
-        let msg_hash_fe = Fr::from_be_bytes_mod_order(&inputs.msg_hash)
-            .into_bigint()
-            .to_bytes_be();
+            .to_bytes_be()
+            .try_into()
+            .expect("converting field elements to bytes failed");
         AnchorShardInputs {
             // safe_address: const_hex::encode(lpad_bytes32(&inputs.safe_address)),
             // msg_hash: const_hex::encode(inputs.msg_hash),
-            safe_address: format!("0x{}", const_hex::encode(safe_address_fe)),
-            msg_hash: format!("0x{}", const_hex::encode(msg_hash_fe)),
+            safe_address: format!("0x{}", const_hex::encode(safe_address_fe.into_bigint().to_bytes_be())),
+            msg_hash: format!("0x{}", const_hex::encode(msg_hash_fe.into_bigint().to_bytes_be())),
             state_root: inputs.state_root,
             storage_root: inputs.storage_root,
             storage_key: inputs.storage_key,
@@ -90,6 +103,8 @@ impl From<Inputs> for AnchorShardInputs {
             account_proof: inputs.account_proof,
             storage_proof: inputs.storage_proof,
             header_rlp: inputs.header_rlp,
+            blockhash: format!("0x{}", const_hex::encode(blockhash)),
+            challenge: format!("0x{}", const_hex::encode(challenge)),
         }
     }
 }
