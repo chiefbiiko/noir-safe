@@ -1,7 +1,7 @@
 use dep::std::hash::{keccak256, poseidon};
 
 fn bytes32_to_field(
-    array: [u8]
+    array: [u8; 32]
 ) -> Field {
     let mut out: Field = 0;
     for i in 0..32 {
