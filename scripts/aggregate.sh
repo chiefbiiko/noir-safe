@@ -32,12 +32,12 @@ nargo prove --package noir_safe_anchor_circuit
 
 # If program has any public inputs/return values these need to be prepended
 #SEE https://discord.com/channels/1113924620781883405/1113924622031798313/1182461084616118363
-# blockhash=$(yq -r '.blockhash' $D/circuits/anchor/Prover.toml)
-# challenge=$(yq -r '.challenge' $D/circuits/anchor/Prover.toml)
-# echo ${blockhash#0x} > $D/proofs/noir_safe_anchor_circuit.proof.out
-# echo ${challenge#0x} >> $D/proofs/noir_safe_anchor_circuit.proof.out
-# cat $D/proofs/noir_safe_anchor_circuit.proof >> $D/proofs/noir_safe_anchor_circuit.proof.out
-cat $D/proofs/noir_safe_anchor_circuit.proof > $D/proofs/noir_safe_anchor_circuit.proof.out
+blockhash=$(yq -r '.blockhash' $D/circuits/anchor/Prover.toml)
+challenge=$(yq -r '.challenge' $D/circuits/anchor/Prover.toml)
+echo ${blockhash#0x} > $D/proofs/noir_safe_anchor_circuit.proof.out
+echo ${challenge#0x} >> $D/proofs/noir_safe_anchor_circuit.proof.out
+cat $D/proofs/noir_safe_anchor_circuit.proof >> $D/proofs/noir_safe_anchor_circuit.proof.out
+# cat $D/proofs/noir_safe_anchor_circuit.proof > $D/proofs/noir_safe_anchor_circuit.proof.out
 
 echo "an len"
 wc -c $D/proofs/noir_safe_anchor_circuit.proof.out
