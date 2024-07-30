@@ -46,6 +46,7 @@ xxd -r -p $D/proofs/noir_safe_anchor_circuit.proof.out $D/proofs/noir_safe_ancho
 wc -c $D/proofs/noir_safe_anchor_circuit.proof.out.bin
 
 AN_FULL_PROOF_AS_FIELDS="$($B proof_as_fields -p $D/proofs/noir_safe_anchor_circuit.proof.out.bin -k $D/target/an_vk -o -)"
+AN_PROOF_AS_FIELDS=$(echo $AN_FULL_PROOF_AS_FIELDS | jq -r '.[2:]')
 
 ###
 
@@ -54,8 +55,8 @@ echo "sp_proof = $SP_FULL_PROOF_AS_FIELDS
 sp_pi = []
 ap_proof = $AP_FULL_PROOF_AS_FIELDS
 ap_pi = []
-an_proof = $AN_FULL_PROOF_AS_FIELDS
-an_pi = []
+an_proof = $AN_PROOF_AS_FIELDS
+an_pi = [\"$blockhash\", \"$challenge\"]
 " >> $AGGREGATION_PROVER_TOML
 
 nargo prove --package noir_safe_aggregation_circuit
