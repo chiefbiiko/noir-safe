@@ -90,8 +90,6 @@ impl From<Inputs> for AnchorShardInputs {
             .try_into()
             .expect("converting field elements to bytes failed");
         AnchorShardInputs {
-            // safe_address: const_hex::encode(lpad_bytes32(&inputs.safe_address)),
-            // msg_hash: const_hex::encode(inputs.msg_hash),
             safe_address: format!("0x{}", const_hex::encode(safe_address_fe.into_bigint().to_bytes_be())),
             msg_hash: format!("0x{}", const_hex::encode(msg_hash_fe.into_bigint().to_bytes_be())),
             state_root: inputs.state_root,
