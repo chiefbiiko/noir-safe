@@ -24,21 +24,3 @@ fn main(
 
     (bytes32_to_field(blockhash), challenge)
 }
-
-// fn bytes32_to_field(
-//     array: [u8; 32]
-// ) -> Field {
-//     let mut out: Field = 0;
-//     for i in 0..32 {
-//         out = (out * 256) + (array[i] as Field);
-//     }
-//     out
-// }
-
-// fn extract_state_root(header_rlp: [u8; 590]) -> Field {
-//     let mut state_root: [u8; 32] = [0; 32];
-//     for i in 0..32 {
-//         state_root[i] = header_rlp[i + 91];
-//     }
-//     bytes32_to_field(state_root)
-// }

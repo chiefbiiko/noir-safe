@@ -4,13 +4,6 @@ use dep::{
     noir_safe_utils::{ACCOUNT_PROOF_MAX_DEPTH, MAX_ACCOUNT_STATE_LENGTH, MAX_TRIE_NODE_LENGTH, bytes20_to_field, bytes32_to_field}
 };
 
-// /// See https://hackmd.io/@axiom/BJBledudT
-// global ACCOUNT_PROOF_MAX_DEPTH = 13;
-// /// Maximum length of a state or storage trie node in bytes
-// global MAX_TRIE_NODE_LENGTH = 532;
-// /// Maximum size of the RLP-encoded list representing an account state
-// global MAX_ACCOUNT_STATE_LENGTH = 134;
-
 #[recursive]
 fn main(
     safe_address: [u8; 20],
@@ -19,8 +12,6 @@ fn main(
     padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
     account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH],
     input_hash: Field,
-    // safe_address_fe: Field,
-    // state_root_fe: Field,
     storage_root_fe: Field,
     storage_key_fe: Field,
 ) {
@@ -37,23 +28,3 @@ fn main(
     };
     let _ = atp.verify_state_root(state_root);
 }
-
-// fn bytes32_to_field(
-//     array: [u8; 32]
-// ) -> Field {
-//     let mut out: Field = 0;
-//     for i in 0..32 {
-//         out = (out * 256) + (array[i] as Field);
-//     }
-//     out
-// }
-
-// fn bytes20_to_field(
-//     array: [u8; 20]
-// ) -> Field {
-//     let mut out: Field = 0;
-//     for i in 0..20 {
-//         out = (out * 256) + (array[i] as Field);
-//     }
-//     out
-// }
