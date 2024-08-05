@@ -1,5 +1,5 @@
 use const_hex;
-use noir_safe_prelude::{fetch_inputs, AnchorShardInputs};
+use noir_safe_prelude::{fetch_inputs, InputsFe};
 use std::io::Write;
 
 #[tokio::main]
@@ -19,9 +19,8 @@ async fn main() {
         .expect("fetch_inputs failed");
 
     let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
-    let anchor_inputs = AnchorShardInputs::from(inputs.clone());
-    let prover_toml = toml::to_string(&inputs).expect("prover toml");
-    let anchor_prover_toml = toml::to_string(&anchor_inputs).expect("anchor prover toml");
+    let inputs_fe = InputsFe::from(inputs);
+    let prover_toml = toml::to_string(&inputs_fe).expect("prover toml");
     let mut ap_prover_file = std::fs::File::create(format!(
         "{}/../circuits/account_proof/Prover.toml",
         cargo_manifest_dir
@@ -44,7 +43,7 @@ async fn main() {
     ))
     .expect("an_prover_file");
     an_prover_file
-        .write_all(anchor_prover_toml.as_bytes())
+        .write_all(prover_toml.as_bytes())
         .expect("an_prover_file write");
 
     println!(

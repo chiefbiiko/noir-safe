@@ -10,13 +10,34 @@ fn bytes32_to_field(
     out
 }
 
+fn extract_state_root(header_rlp: [u8; 590]) -> Field {
+    let mut state_root: [u8; 32] = [0; 32];
+    for i in 0..32 {
+        state_root[i] = header_rlp[i + 91];
+    }
+    bytes32_to_field(state_root)
+}
+
 #[recursive]
 fn main(
-    safe_address: Field,
+    // safe_address: Field,
     msg_hash: Field,
-    header_rlp: [u8; 590]
+    header_rlp: [u8; 590],
+
+    input_hash: Field,
+    safe_address_fe: Field,
+    state_root_fe: Field,
+    storage_root_fe: Field,
+    storage_key_fe: Field,
 ) -> pub (Field, Field) {
+    let reput_hash = poseidon::bn254::hash_4([state_root_fe, safe_address_fe, storage_root_fe, storage_key_fe]);
+    assert(reput_hash == input_hash);
+
+    let state_root_xt = extract_state_root(header_rlp);
+    assert(state_root_fe == state_root_xt);
+
     let blockhash = keccak256(header_rlp, 590);
-    let challenge = poseidon::bn254::hash_2([safe_address, msg_hash]);
+    let challenge = poseidon::bn254::hash_2([safe_address_fe, msg_hash]);
+
     (bytes32_to_field(blockhash), challenge)
 }

@@ -51,9 +51,20 @@ pub struct Inputs {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AnchorShardInputs {
-    pub safe_address: String,       // Safe address in hex
-    pub msg_hash: String,           // Custom msg hash in hex
+pub struct InputsFe {
+    // These are all 0xhex strings of bn254 field elements
+    pub input_hash: String,         // poseidon(state_root, safe_address, storage_root, storage_key)
+    pub safe_address_fe: String,    // Safe address
+    pub msg_hash_fe: String,        // Custom msg hash
+    pub state_root_fe: String,      // eth_getBlockBy*::stateRoot 
+    pub storage_root_fe: String,    // eth_getProof::storageHash
+    pub storage_key_fe: String,     // keccak256(msg_hash + uint256(7))
+    // precalculated outputs
+    pub blockhash: String,
+    pub challenge: String,          // poseidon(safe_address, msg_hash)
+
+    pub safe_address: [u8; 20],     // Safe address
+    pub msg_hash: [u8; 32],         // Custom msg hash
     pub state_root: [u8; 32],       // eth_getBlockBy*::stateRoot
     pub storage_root: [u8; 32],     // eth_getProof::storageHash
     pub storage_key: [u8; 32],      // keccak256(msg_hash + uint256(7))
@@ -67,31 +78,45 @@ pub struct AnchorShardInputs {
     pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH], // eth_getProof::storageProof.proof
     #[serde(with = "serde_arrays")]
     pub header_rlp: [u8; 590], // RLP-encoded header
-    // precalculated outputs as bn254 field elements in 0x prefixed hex
-    pub blockhash: String,
-    pub challenge: String,
 }
 
-impl From<Inputs> for AnchorShardInputs {
+impl From<Inputs> for InputsFe {
     fn from(inputs: Inputs) -> Self {
         let blockhash = keccak256(inputs.header_rlp);
-        let mut poseidon = Poseidon::<Fr>::new_circom(2).expect("poseidon init failed");
+        let mut poseidon_h2 = Poseidon::<Fr>::new_circom(2).expect("poseidon hash2 init failed");
         // _mod_order might reduce msg_hash_fe i.e. it has 2 preimages aka collision;
         // since the 20-byte Safe address cannot exceed bn254's scalar field _mod_order
         // is always a noop for safe_address_fe, i.e. it has strictly 1 address preimage: 
         // no collisions; consequently "cross-account" collisions can never occur
         let safe_address_fe = Fr::from_be_bytes_mod_order(&lpad_bytes32(&inputs.safe_address));
         let msg_hash_fe = Fr::from_be_bytes_mod_order(&inputs.msg_hash);
-        let challenge: [u8; 32] = poseidon
+        let challenge: [u8; 32] = poseidon_h2
             .hash(&[safe_address_fe, msg_hash_fe])
             .expect("poseidon hash failed")
             .into_bigint()
             .to_bytes_be()
             .try_into()
             .expect("converting field elements to bytes failed");
-        AnchorShardInputs {
-            safe_address: format!("0x{}", const_hex::encode(safe_address_fe.into_bigint().to_bytes_be())),
-            msg_hash: format!("0x{}", const_hex::encode(msg_hash_fe.into_bigint().to_bytes_be())),
+
+        let state_root_fe =  Fr::from_be_bytes_mod_order(&inputs.state_root);
+        let storage_root_fe = Fr::from_be_bytes_mod_order(&inputs.storage_root);
+        let storage_key_fe = Fr::from_be_bytes_mod_order(&inputs.storage_key);
+
+        let mut poseidon_h4 = Poseidon::<Fr>::new_circom(4).expect("poseidon hash4 init failed");
+        let input_hash = poseidon_h4
+            .hash(&[state_root_fe, safe_address_fe, storage_root_fe, storage_key_fe])
+            .expect("poseidon hash failed");
+
+        InputsFe {
+            input_hash: format!("0x{}", const_hex::encode(input_hash.into_bigint().to_bytes_be())),
+            safe_address_fe: format!("0x{}", const_hex::encode(safe_address_fe.into_bigint().to_bytes_be())),
+            msg_hash_fe: format!("0x{}", const_hex::encode(msg_hash_fe.into_bigint().to_bytes_be())),
+            state_root_fe: format!("0x{}", const_hex::encode(state_root_fe.into_bigint().to_bytes_be())), 
+            storage_root_fe:  format!("0x{}", const_hex::encode(storage_root_fe.into_bigint().to_bytes_be())), 
+            storage_key_fe:  format!("0x{}", const_hex::encode(storage_key_fe.into_bigint().to_bytes_be())), 
+
+            safe_address: inputs.safe_address,
+            msg_hash: inputs.msg_hash,
             state_root: inputs.state_root,
             storage_root: inputs.storage_root,
             storage_key: inputs.storage_key,
