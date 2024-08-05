@@ -90,15 +90,9 @@ impl From<Inputs> for InputsFe {
         // no collisions; consequently "cross-account" collisions can never occur
         let safe_address_fe = Fr::from_be_bytes_mod_order(&lpad_bytes32(&inputs.safe_address));
         let msg_hash_fe = Fr::from_be_bytes_mod_order(&inputs.msg_hash);
-        // let challenge: [u8; 32] = poseidon_h2
         let challenge = poseidon_h2
             .hash(&[safe_address_fe, msg_hash_fe])
-            .expect("poseidon hash failed")
-            ;
-            // .into_bigint()
-            // .to_bytes_be()
-            // .try_into()
-            // .expect("converting field elements to bytes failed");
+            .expect("poseidon hash failed");
 
         let state_root_fe =  Fr::from_be_bytes_mod_order(&inputs.state_root);
         let storage_root_fe = Fr::from_be_bytes_mod_order(&inputs.storage_root);

@@ -3,3 +3,6 @@ proofs
 node_modules
 archives
 libs
+circuits/aggregation/Verifier.toml
+circuits/account_proof/Verifier.toml
+circuits/storage_proof/Verifier.toml

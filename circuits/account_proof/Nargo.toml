@@ -7,4 +7,3 @@ compiler_version = "=0.29.0"
 [dependencies]
 noir_trie_proofs = { git = "https://github.com/aragonzkresearch/noir-trie-proofs", tag = "main", directory = "lib" }
 noir_safe_utils = { path = "../utils" }
-# noir_trie_proofs = { git = "https://github.com/chiefbiiko/noir-trie-proofs", tag = "explicit-numeric-generics", directory = "lib" }
