@@ -17,7 +17,6 @@ fn main(
     account_proof_depth: u64,
     padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
     account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH],
-
     input_hash: Field,
     safe_address_fe: Field,
     state_root_fe: Field,

@@ -20,10 +20,8 @@ fn extract_state_root(header_rlp: [u8; 590]) -> Field {
 
 #[recursive]
 fn main(
-    // safe_address: Field,
-    msg_hash: Field,
+    msg_hash_fe: Field,
     header_rlp: [u8; 590],
-
     input_hash: Field,
     safe_address_fe: Field,
     state_root_fe: Field,
@@ -37,7 +35,7 @@ fn main(
     assert(state_root_fe == state_root_xt);
 
     let blockhash = keccak256(header_rlp, 590);
-    let challenge = poseidon::bn254::hash_2([safe_address_fe, msg_hash]);
+    let challenge = poseidon::bn254::hash_2([safe_address_fe, msg_hash_fe]);
 
     (bytes32_to_field(blockhash), challenge)
 }

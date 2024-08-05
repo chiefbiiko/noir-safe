@@ -17,7 +17,6 @@ fn main(
     storage_key: [u8; 32],
     storage_proof_depth: u64,
     storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH],
-
     input_hash: Field,
     safe_address_fe: Field,
     state_root_fe: Field,
