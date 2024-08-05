@@ -18,11 +18,13 @@ fn main(
     padded_account_value: [u8; MAX_ACCOUNT_STATE_LENGTH],
     account_proof: [u8; MAX_TRIE_NODE_LENGTH * ACCOUNT_PROOF_MAX_DEPTH],
     input_hash: Field,
-    safe_address_fe: Field,
-    state_root_fe: Field,
+    // safe_address_fe: Field,
+    // state_root_fe: Field,
     storage_root_fe: Field,
     storage_key_fe: Field,
 ) {
+    let safe_address_fe = bytes20_to_field(safe_address);
+    let state_root_fe = bytes32_to_field(state_root);
     let reput_hash = poseidon::bn254::hash_4([state_root_fe, safe_address_fe, storage_root_fe, storage_key_fe]);
     assert(reput_hash == input_hash);
 
@@ -33,4 +35,24 @@ fn main(
         value: padded_account_value
     };
     let _ = atp.verify_state_root(state_root);
+}
+
+fn bytes32_to_field(
+    array: [u8; 32]
+) -> Field {
+    let mut out: Field = 0;
+    for i in 0..32 {
+        out = (out * 256) + (array[i] as Field);
+    }
+    out
+}
+
+fn bytes20_to_field(
+    array: [u8; 20]
+) -> Field {
+    let mut out: Field = 0;
+    for i in 0..20 {
+        out = (out * 256) + (array[i] as Field);
+    }
+    out
 }

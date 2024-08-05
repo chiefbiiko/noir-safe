@@ -20,9 +20,11 @@ fn main(
     input_hash: Field,
     safe_address_fe: Field,
     state_root_fe: Field,
-    storage_root_fe: Field,
-    storage_key_fe: Field,
+    // storage_root_fe: Field,
+    // storage_key_fe: Field,
 ) {
+    let storage_key_fe = bytes32_to_field(storage_key);
+    let storage_root_fe = bytes32_to_field(storage_root);
     let reput_hash = poseidon::bn254::hash_4([state_root_fe, safe_address_fe, storage_root_fe, storage_key_fe]);
     assert(reput_hash == input_hash);
 
@@ -33,4 +35,14 @@ fn main(
         value: SAFE_SIGNED_MSG_VALUE
     };
     let _ = stp.verify_storage_root(storage_root);
+}
+
+fn bytes32_to_field(
+    array: [u8; 32]
+) -> Field {
+    let mut out: Field = 0;
+    for i in 0..32 {
+        out = (out * 256) + (array[i] as Field);
+    }
+    out
 }
