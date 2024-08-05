@@ -3,8 +3,8 @@ use dep::{
     noir_trie_proofs::trie_proof::TrieProof,
 };
 
-///FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
-global ACCOUNT_PROOF_MAX_DEPTH = 7;//14;
+/// See https://hackmd.io/@axiom/BJBledudT
+global ACCOUNT_PROOF_MAX_DEPTH = 13;
 /// Maximum length of a state or storage trie node in bytes
 global MAX_TRIE_NODE_LENGTH = 532;
 /// Maximum size of the RLP-encoded list representing an account state

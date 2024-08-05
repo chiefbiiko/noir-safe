@@ -1,23 +1,5 @@
 use dep::std::hash::{keccak256, poseidon};
 
-fn bytes32_to_field(
-    array: [u8; 32]
-) -> Field {
-    let mut out: Field = 0;
-    for i in 0..32 {
-        out = (out * 256) + (array[i] as Field);
-    }
-    out
-}
-
-fn extract_state_root(header_rlp: [u8; 590]) -> Field {
-    let mut state_root: [u8; 32] = [0; 32];
-    for i in 0..32 {
-        state_root[i] = header_rlp[i + 91];
-    }
-    bytes32_to_field(state_root)
-}
-
 #[recursive]
 fn main(
     msg_hash_fe: Field,
@@ -38,4 +20,22 @@ fn main(
     let challenge = poseidon::bn254::hash_2([safe_address_fe, msg_hash_fe]);
 
     (bytes32_to_field(blockhash), challenge)
+}
+
+fn bytes32_to_field(
+    array: [u8; 32]
+) -> Field {
+    let mut out: Field = 0;
+    for i in 0..32 {
+        out = (out * 256) + (array[i] as Field);
+    }
+    out
+}
+
+fn extract_state_root(header_rlp: [u8; 590]) -> Field {
+    let mut state_root: [u8; 32] = [0; 32];
+    for i in 0..32 {
+        state_root[i] = header_rlp[i + 91];
+    }
+    bytes32_to_field(state_root)
 }
