@@ -82,7 +82,7 @@ pub struct InputsFe {
 
 impl From<Inputs> for InputsFe {
     fn from(inputs: Inputs) -> Self {
-        let blockhash = keccak256(inputs.header_rlp);
+        let blockhash = Fr::from_be_bytes_mod_order(&keccak256(inputs.header_rlp));
         let mut poseidon_h2 = Poseidon::<Fr>::new_circom(2).expect("poseidon hash2 init failed");
         // _mod_order might reduce msg_hash_fe i.e. it has 2 preimages aka collision;
         // since the 20-byte Safe address cannot exceed bn254's scalar field _mod_order
@@ -90,13 +90,15 @@ impl From<Inputs> for InputsFe {
         // no collisions; consequently "cross-account" collisions can never occur
         let safe_address_fe = Fr::from_be_bytes_mod_order(&lpad_bytes32(&inputs.safe_address));
         let msg_hash_fe = Fr::from_be_bytes_mod_order(&inputs.msg_hash);
-        let challenge: [u8; 32] = poseidon_h2
+        // let challenge: [u8; 32] = poseidon_h2
+        let challenge = poseidon_h2
             .hash(&[safe_address_fe, msg_hash_fe])
             .expect("poseidon hash failed")
-            .into_bigint()
-            .to_bytes_be()
-            .try_into()
-            .expect("converting field elements to bytes failed");
+            ;
+            // .into_bigint()
+            // .to_bytes_be()
+            // .try_into()
+            // .expect("converting field elements to bytes failed");
 
         let state_root_fe =  Fr::from_be_bytes_mod_order(&inputs.state_root);
         let storage_root_fe = Fr::from_be_bytes_mod_order(&inputs.storage_root);
@@ -126,8 +128,8 @@ impl From<Inputs> for InputsFe {
             account_proof: inputs.account_proof,
             storage_proof: inputs.storage_proof,
             header_rlp: inputs.header_rlp,
-            blockhash: format!("0x{}", const_hex::encode(blockhash)),
-            challenge: format!("0x{}", const_hex::encode(challenge)),
+            blockhash: format!("0x{}", const_hex::encode(blockhash.into_bigint().to_bytes_be())),
+            challenge: format!("0x{}", const_hex::encode(challenge.into_bigint().to_bytes_be())),
         }
     }
 }
