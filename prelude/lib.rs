@@ -65,9 +65,8 @@ pub struct InputsFe {
     pub storage_root_fe: String,    // eth_getProof::storageHash
     pub storage_key_fe: String,     // keccak256(msg_hash + uint256(7))
     // precalculated outputs
-    pub blockhash: String,
+    pub blockhash: String,          // keccak256(header_rlp)
     pub challenge: String,          // poseidon(safe_address, msg_hash)
-
     pub safe_address: [u8; 20],     // Safe address
     pub msg_hash: [u8; 32],         // Custom msg hash
     pub state_root: [u8; 32],       // eth_getBlockBy*::stateRoot
@@ -88,11 +87,7 @@ pub struct InputsFe {
 
 impl From<Inputs> for InputsFe {
     fn from(inputs: Inputs) -> Self {
-        //WIP
-        // let blockhash = Fr::from_be_bytes_mod_order(&keccak256(inputs.header_rlp));
-        println!("header_rlp len before {}", inputs.header_rlp.len());
         let trimmed_header = trim_header(inputs.header_rlp);
-        println!("trimmed_header len after {}", trimmed_header.len());
         let blockhash = Fr::from_be_bytes_mod_order(&keccak256(trimmed_header));
 
         let mut poseidon_h2 = Poseidon::<Fr>::new_circom(2).expect("poseidon hash2 init failed");
@@ -119,10 +114,9 @@ impl From<Inputs> for InputsFe {
             input_hash: format!("0x{}", const_hex::encode(input_hash.into_bigint().to_bytes_be())),
             safe_address_fe: format!("0x{}", const_hex::encode(safe_address_fe.into_bigint().to_bytes_be())),
             msg_hash_fe: format!("0x{}", const_hex::encode(msg_hash_fe.into_bigint().to_bytes_be())),
-            state_root_fe: format!("0x{}", const_hex::encode(state_root_fe.into_bigint().to_bytes_be())), 
-            storage_root_fe:  format!("0x{}", const_hex::encode(storage_root_fe.into_bigint().to_bytes_be())), 
-            storage_key_fe:  format!("0x{}", const_hex::encode(storage_key_fe.into_bigint().to_bytes_be())), 
-
+            state_root_fe: format!("0x{}", const_hex::encode(state_root_fe.into_bigint().to_bytes_be())),
+            storage_root_fe:  format!("0x{}", const_hex::encode(storage_root_fe.into_bigint().to_bytes_be())),
+            storage_key_fe:  format!("0x{}", const_hex::encode(storage_key_fe.into_bigint().to_bytes_be())),
             safe_address: inputs.safe_address,
             msg_hash: inputs.msg_hash,
             state_root: inputs.state_root,
@@ -166,6 +160,8 @@ pub async fn fetch_inputs(
     .ok_or(anyhow!("RLP list empty"))?
     .to_vec();
 
+    let (header_rlp_len, header_rlp) = rlp_encode_header(&block);
+
     let TrieProof {
         proof: padded_storage_proof,
         value: _,
@@ -195,8 +191,6 @@ pub async fn fetch_inputs(
         MAX_ACCOUNT_STATE_LENGTH,
     )
     .map_err(|_| anyhow!("Preprocess account proof"))?;
-
-    let (header_rlp_len, header_rlp) = rlp_encode_header(&block);
 
     Ok((
         latest.as_u64(),

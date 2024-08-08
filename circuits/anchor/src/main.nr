@@ -20,7 +20,6 @@ fn main(
     let state_root_xt = extract_state_root(header_rlp);
     assert(state_root_fe == state_root_xt);
 
-    // let blockhash = keccak256(header_rlp, 590);
     let blockhash = keccak256(header_rlp, header_rlp_len);
     let challenge = poseidon::bn254::hash_2([safe_address_fe, msg_hash_fe]);
 
