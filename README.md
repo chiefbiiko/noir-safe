@@ -52,6 +52,10 @@ Generate the Solidity verifier
 ./scripts/solidity_verifier.sh
 ```
 
+Test everything e2e
 
-<!-- 
-- FIXME sometimes header_rlp byte_len != 590 -->
+```sh
+SAFE=0x38Ba7f...673336EDDc \
+MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
+  ./scripts/test.sh
+```
