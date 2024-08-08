@@ -30,6 +30,10 @@ const MAX_TRIE_NODE_LENGTH: usize = 532;
 const MAX_STORAGE_VALUE_LENGTH: usize = 32;
 /// Maximum size of the RLP-encoded list representing an account state
 const MAX_ACCOUNT_STATE_LENGTH: usize = 134;
+/// Minimum number of bytes of a RLP encoded header
+const HEADER_RLP_MIN_BYTES: usize = 577;
+/// Maximum number of bytes of a RLP encoded header
+const HEADER_RLP_MAX_BYTES: usize = 599;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Inputs {
@@ -47,7 +51,8 @@ pub struct Inputs {
     #[serde(with = "serde_arrays")]
     pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH], // eth_getProof::storageProof.proof
     #[serde(with = "serde_arrays")]
-    pub header_rlp: [u8; 590], // RLP-encoded header
+    pub header_rlp: [u8; HEADER_RLP_MAX_BYTES], // RLP-encoded header
+    pub header_rlp_len: usize, // Length of the unpadded header
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -77,12 +82,19 @@ pub struct InputsFe {
     #[serde(with = "serde_arrays")]
     pub storage_proof: [u8; MAX_TRIE_NODE_LENGTH * STORAGE_PROOF_MAX_DEPTH], // eth_getProof::storageProof.proof
     #[serde(with = "serde_arrays")]
-    pub header_rlp: [u8; 590], // RLP-encoded header
+    pub header_rlp: [u8; HEADER_RLP_MAX_BYTES], // RLP-encoded header
+    pub header_rlp_len: usize, // Length of the unpadded header
 }
 
 impl From<Inputs> for InputsFe {
     fn from(inputs: Inputs) -> Self {
-        let blockhash = Fr::from_be_bytes_mod_order(&keccak256(inputs.header_rlp));
+        //WIP
+        // let blockhash = Fr::from_be_bytes_mod_order(&keccak256(inputs.header_rlp));
+        println!("header_rlp len before {}", inputs.header_rlp.len());
+        let trimmed_header = trim_header(inputs.header_rlp);
+        println!("trimmed_header len after {}", trimmed_header.len());
+        let blockhash = Fr::from_be_bytes_mod_order(&keccak256(trimmed_header));
+
         let mut poseidon_h2 = Poseidon::<Fr>::new_circom(2).expect("poseidon hash2 init failed");
         // _mod_order might reduce msg_hash_fe i.e. it has 2 preimages aka collision;
         // since the 20-byte Safe address cannot exceed bn254's scalar field _mod_order
@@ -122,6 +134,7 @@ impl From<Inputs> for InputsFe {
             account_proof: inputs.account_proof,
             storage_proof: inputs.storage_proof,
             header_rlp: inputs.header_rlp,
+            header_rlp_len: inputs.header_rlp_len,
             blockhash: format!("0x{}", const_hex::encode(blockhash.into_bigint().to_bytes_be())),
             challenge: format!("0x{}", const_hex::encode(challenge.into_bigint().to_bytes_be())),
         }
@@ -183,12 +196,15 @@ pub async fn fetch_inputs(
     )
     .map_err(|_| anyhow!("Preprocess account proof"))?;
 
+    let (header_rlp_len, header_rlp) = rlp_encode_header(&block);
+
     Ok((
         latest.as_u64(),
         Inputs {
             safe_address: safe_address.into(),
             msg_hash: msg_hash.into(),
-            header_rlp: rlp_encode_header(&block),
+            header_rlp,
+            header_rlp_len,
             state_root: block.state_root.into(),
             storage_root: proof.storage_hash.into(),
             storage_key,
@@ -209,7 +225,7 @@ pub async fn fetch_inputs(
 
 // https://ethereum.stackexchange.com/a/67332
 // https://github.com/ethereum/go-ethereum/blob/14eb8967be7acc54c5dc9a416151ac45c01251b6/core/types/block.go#L65
-pub fn rlp_encode_header(block: &Block<H256>) -> [u8; 590] {
+pub fn rlp_encode_header(block: &Block<H256>) -> (usize, [u8; HEADER_RLP_MAX_BYTES]) {
     let mut rlp = RlpStream::new();
     rlp.begin_list(20);
     rlp.append(&block.parent_hash);
@@ -236,8 +252,15 @@ pub fn rlp_encode_header(block: &Block<H256>) -> [u8; 590] {
             .parent_beacon_block_root
             .expect("parent_beacon_block_root"),
     ); // cancun
-    let bytes: Vec<u8> = rlp.out().freeze().into();
-    bytes.try_into().expect("header_rlp")
+    let mut bytes: Vec<u8> = rlp.out().freeze().into();
+
+    let unpadded_length = bytes.len();
+    println!("unpadded_length {}", unpadded_length);
+    while bytes.len() < HEADER_RLP_MAX_BYTES {
+        bytes.push(0xff);
+    }
+
+    (unpadded_length, bytes.try_into().expect("header_rlp"))
 }
 
 pub fn lpad_bytes32(x: &[u8; 20]) -> [u8; 32] {
@@ -254,6 +277,16 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
     let mut k = Keccak::v256();
     k.update(input.as_ref());
     k.finalize(&mut out);
+    out
+}
+
+pub fn trim_header(header_rlp: [u8; HEADER_RLP_MAX_BYTES]) -> Vec<u8> {
+    let mut out = header_rlp[0..HEADER_RLP_MIN_BYTES].to_vec();
+    for i in HEADER_RLP_MIN_BYTES..HEADER_RLP_MAX_BYTES {
+        if header_rlp[i] != 0xff {
+            out.push(header_rlp[i]);
+        }
+    }
     out
 }
 

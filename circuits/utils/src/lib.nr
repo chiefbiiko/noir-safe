@@ -11,6 +11,11 @@ global MAX_TRIE_NODE_LENGTH = 532;
 global SAFE_SIGNED_MSG_VALUE =
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
 
+/// Maximum number of bytes of a RLP encoded header
+global HEADER_RLP_MAX_BYTES = 599;
+/// Minimum number of bytes of a RLP encoded header
+global HEADER_RLP_MIN_BYTES = 577;
+
 pub fn bytes32_to_field(
     array: [u8; 32]
 ) -> Field {
@@ -31,7 +36,7 @@ pub fn bytes20_to_field(
     out
 }
 
-pub fn extract_state_root(header_rlp: [u8; 590]) -> Field {
+pub fn extract_state_root(header_rlp: [u8; HEADER_RLP_MAX_BYTES]) -> Field {
     let mut state_root: [u8; 32] = [0; 32];
     for i in 0..32 {
         state_root[i] = header_rlp[i + 91];
