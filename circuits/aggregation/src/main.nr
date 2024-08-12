@@ -12,7 +12,7 @@ fn main(
     an_vk: [Field; 114],
     an_vk_hash: Field,
     an_proof: [Field; 93],
-    an_pi: pub [Field; 2],
+    an_pi: [Field; 2],
 ) {
     verify_proof(
         sp_vk.as_slice(),
