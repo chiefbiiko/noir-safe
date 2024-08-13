@@ -17,6 +17,14 @@ noirup -v v0.29.0
 brew install jq yq
 ```
 
+Test everything e2e
+
+```sh
+SAFE=0x38Ba7f4278A1482FA0a7bC8B261a9A673336EDDc \
+MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
+  ./scripts/test.sh
+```
+
 Compile all circuits
 
 ```sh
@@ -52,10 +60,3 @@ Generate the Solidity verifier
 ./scripts/solidity_verifier.sh
 ```
 
-Test everything e2e
-
-```sh
-SAFE=0x38Ba7f...673336EDDc \
-MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
-  ./scripts/test.sh
-```
