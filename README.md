@@ -13,9 +13,9 @@ Install tooling
 ```sh
 # install noirup
 curl -L https://raw.githubusercontent.com/noir-lang/noirup/main/install | bash
-#TODO install bbup
-# install nargo and the acvm-backend-barretenberg
-# noirup -v v0.29.0
+# install bbup
+curl -L https://raw.githubusercontent.com/AztecProtocol/aztec-packages/master/barretenberg/cpp/installation/install | bash
+# install nargo and bb
 noirup -v 0.32.0
 bbup -v 0.46.1
 # install json and toml parsers
@@ -25,7 +25,7 @@ brew install jq yq
 Test everything e2e
 
 ```sh
-SAFE=0x38Ba7f4278A1482FA0a7bC8B261a9A673336EDDc \
+SAFE=0x38Ba7f...673336EDDc \
 MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
   ./scripts/test.sh
 ```

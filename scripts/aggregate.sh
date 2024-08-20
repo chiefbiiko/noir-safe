@@ -5,7 +5,7 @@ set -ueExo pipefail
 #FROM https://github.com/noir-lang/noir/blob/master/examples/recursion/generate_recursive_proof.sh
 #TODO run shard provers in parallel
 
-B=bb #~/.nargo/backends/acvm-backend-barretenberg/backend_binary
+B=~/.bb/bb
 D=$(git rev-parse --show-toplevel)
 VK_TOML=$D/target/vk.toml
 AGGREGATION_PROVER_TOML=$D/circuits/aggregation/Prover.toml

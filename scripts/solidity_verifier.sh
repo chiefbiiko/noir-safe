@@ -2,7 +2,7 @@
 
 set -ueExo pipefail
 
-B=bb #~/.nargo/backends/acvm-backend-barretenberg/backend_binary
+B=~/.bb/bb
 D=$(git rev-parse --show-toplevel)
 
 cp $D/target/ag_vk $D/target/vk
