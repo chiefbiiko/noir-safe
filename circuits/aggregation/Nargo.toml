@@ -2,6 +2,6 @@
 name = "noir_safe_aggregation_circuit"
 type = "bin"
 authors = ["chiefbiiko"]
-compiler_version = ">=0.29.0"
+compiler_version = "=0.32.0"
 
 [dependencies]

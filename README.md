@@ -13,8 +13,11 @@ Install tooling
 ```sh
 # install noirup
 curl -L https://raw.githubusercontent.com/noir-lang/noirup/main/install | bash
+#TODO install bbup
 # install nargo and the acvm-backend-barretenberg
-noirup -v v0.29.0
+# noirup -v v0.29.0
+noirup -v 0.32.0
+bbup -v 0.46.1
 # install json and toml parsers
 brew install jq yq
 ```
