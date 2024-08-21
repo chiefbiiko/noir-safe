@@ -587,7 +587,7 @@ abstract contract BaseUltraVerifier {
             requiredPublicInputCount := mload(NUM_INPUTS_LOC)
         }
         if (requiredPublicInputCount != _publicInputs.length) {
-            console.logUint("requiredPublicInputCount %d; _publicInputs.length %d", requiredPublicInputCount, _publicInputs.length);
+            console.log("requiredPublicInputCount %d; _publicInputs.length %d", requiredPublicInputCount, _publicInputs.length);
             revert PUBLIC_INPUT_COUNT_INVALID(requiredPublicInputCount, _publicInputs.length);
         }
 
