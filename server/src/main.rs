@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate rocket;
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use rocket::{
     data::{Limits, ToByteUnit},
     fairing::{Fairing, Info, Kind},
@@ -15,9 +15,11 @@ use rocket::{
 // use sp1_safe_basics::{Inputs, NoirSafeParams, NoirSafeParams};
 // use sp1_safe_fetch::fetch_inputs;
 // use sp1_sdk::{HashableKey, ProverClient, SP1ProvingKey, SP1Stdin, SP1VerifyingKey};
-use std::env;
+use std::{env, process::ExitStatus};
 use std::net::Ipv4Addr;
 use std::sync::LazyLock;
+use std::process::Command;
+use serde::{Deserialize, Serialize};
 
 // const ELF: &[u8] = include_bytes!("../../program/elf/riscv32im-succinct-zkvm-elf");
 
@@ -42,7 +44,7 @@ pub struct NoirSafeParams {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct NoirSafeParams {
+pub struct NoirSafeResult {
     pub chain_id: u64,
     pub safe_address: String,
     pub message_hash: String,
@@ -55,6 +57,7 @@ pub struct NoirSafeParams {
 
 async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     log::info!("🏈 incoming request");
+    let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
     let rpc = match params.chain_id {
         100 => env::var("GNOSIS_RPC").unwrap_or("https://rpc.gnosis.gateway.fm".to_string()),
         11155111 => env::var("SEPOLIA_RPC").unwrap_or("https://1rpc.io/sepolia".to_string()),
@@ -64,7 +67,7 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     let safe: [u8; 20] = const_hex::decode_to_array::<&str, 20>(&params.safe_address)?;
     let msg_hash: [u8; 32] = const_hex::decode_to_array::<&str, 32>(&params.message_hash)?;
 
-
+    
 
     //TODO
     // run these two
@@ -75,6 +78,24 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     //              hex_pubs=$(head -c $pub_bytes $d/target/ag_proof.bin | od -An -v -t x1 | tr -d $' \n')
     //              hex_proof=$(tail -c +$(($pub_bytes + 1)) $d/target/ag_proof.bin | od -An -v -t x1 | tr -d $' \n')
 
+
+
+let prelude = Command::new("cargo run")
+                     .arg(format!("--manifest-path {}/../prelude/Cargo.toml", cargo_manifest_dir))
+                     .output()?;
+if !prelude.status.success() {
+    bail!("prelude failed");
+}
+let anchor = {
+    let last_line = String::from_utf8_lossy(&prelude.stdout).split('\n').last().context("")?;
+    let digits = last_line.chars().filter(|char| char.is_digit(10)).collect::<String>();
+    u64::from_str_radix(&digits, 10)?
+};
+let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", cargo_manifest_dir))
+                     .output()?;
+if !aggregation.status.success() {
+    bail!("prelude failed");
+}
 
 
 
@@ -95,7 +116,7 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     // let challenge = proofwpv.public_values.read::<[u8; 32]>();
     // let proofbin = bincode::serialize(&proofwpv.proof)?;
 
-    Ok(json!(NoirSafeParams {
+    Ok(json!(NoirSafeResult {
         chain_id: params.chain_id,
         safe_address: params.safe_address.to_owned(),
         message_hash: params.message_hash.to_owned(),
@@ -103,7 +124,7 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         block_hash: format!("0x{}", const_hex::encode(blockhash)),
         challenge: format!("0x{}", const_hex::encode(challenge)),
         proof: format!("0x{}", const_hex::encode(proofbin)),
-        public_inputs: vec![],
+        public_inputs: vec![], //TODO
     }))
 }
 
