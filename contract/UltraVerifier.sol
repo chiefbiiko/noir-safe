@@ -3,6 +3,8 @@
 // Copyright 2022 Aztec
 pragma solidity >=0.8.4;
 
+import "forge-std/console.sol";
+
 library UltraVerificationKey {
     function verificationKeyHash() internal pure returns(bytes32) {
         return 0x9970124753e06e70800626f6ac2884fef773d7929682a8a449ac526153a35afb;
@@ -585,6 +587,7 @@ abstract contract BaseUltraVerifier {
             requiredPublicInputCount := mload(NUM_INPUTS_LOC)
         }
         if (requiredPublicInputCount != _publicInputs.length) {
+            console.logUint("requiredPublicInputCount %d; _publicInputs.length %d", requiredPublicInputCount, _publicInputs.length);
             revert PUBLIC_INPUT_COUNT_INVALID(requiredPublicInputCount, _publicInputs.length);
         }
 
