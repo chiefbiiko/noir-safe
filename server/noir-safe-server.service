@@ -1,0 +1,11 @@
+[Unit]
+Description=noir-safe proving server systemd service
+After=network-online.target
+[Service]
+User=me
+WorkingDirectory=/home/me/apps/noir-safe
+EnvironmentFile=/home/me/apps/noir-safe/server/.env
+Restart=on-failure
+ExecStart=/usr/local/bin/noir-safe-server
+[Install]
+WantedBy=multi-user.target

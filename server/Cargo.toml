@@ -1,0 +1,24 @@
+[workspace]
+[package]
+name = "noir-safe-server"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.81"
+bincode = "1.3.3"
+const-hex = "1.11.1"
+log = "0.4.21"
+rocket = {version = "0.5.0", features = ["json"] }
+
+# sp1-safe-basics = { path = "../lib/basics" }
+
+# sp1-sdk = { git = "https://github.com/succinctlabs/sp1.git", tag = "v1.0.5-testnet", features = ["plonk", "neon"] }
+# sp1-safe-basics = { path = "../lib/basics" }
+# sp1-safe-fetch = { path = "../lib/fetch" }
+
+# [build-dependencies]
+# sp1-helper = { git = "https://github.com/succinctlabs/sp1.git", tag = "v1.0.5-testnet" }
+
+# [patch.crates-io]
+# tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", branch = "patch-v2.0.2" }
