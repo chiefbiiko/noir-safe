@@ -64,4 +64,3 @@ Generate the Solidity verifier
 ```sh
 ./scripts/solidity_verifier.sh
 ```
-

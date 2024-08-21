@@ -16,8 +16,8 @@ PUBLIC_INPUT_BYTES=$((32 * $NUM_PUBLIC_INPUTS))
 blockhash=$(yq -r '.blockhash' $D/circuits/anchor/Prover.toml)
 challenge=$(yq -r '.challenge' $D/circuits/anchor/Prover.toml)
 HEX_PROOF=$(tail -c +$(($PUBLIC_INPUT_BYTES + 1)) $D/target/ag_proof.bin | od -An -v -t x1 | tr -d $' \n')
-
-anvil &
+echo "HEX_PROOF len ${#HEX_PROOF}"
+anvil --disable-block-gas-limit --code-size-limit 144444 & #140131
 anvil_pid=$!
 
 DEPLOY_INFO=$(forge create --contracts $D/contract UltraVerifier \
@@ -26,6 +26,7 @@ DEPLOY_INFO=$(forge create --contracts $D/contract UltraVerifier \
     --json)
 VERIFIER_ADDRESS=$(echo $DEPLOY_INFO | jq -r '.deployedTo')
 
-cast call $VERIFIER_ADDRESS "verify(bytes, bytes32[])(bool)" "0x$HEX_PROOF" "[${blockhash#0x}, ${challenge#0x}]"
+# cast call $VERIFIER_ADDRESS "verify(bytes, bytes32[])(bool)" "0x$HEX_PROOF" "[${blockhash#0x}, ${challenge#0x}]"
+cast call $VERIFIER_ADDRESS "verify(bytes, bytes32[])(bool)" "0x$HEX_PROOF" "[${blockhash}, ${challenge}]"
 
 kill $anvil_pid
