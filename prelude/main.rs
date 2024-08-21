@@ -46,8 +46,5 @@ async fn main() {
         .write_all(prover_toml.as_bytes())
         .expect("an_prover_file write");
 
-    println!(
-        "anchor block number {} - Prover.toml files refreshed",
-        anchor
-    );
+    println!("anchor block number {}", anchor);
 }
