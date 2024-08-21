@@ -2,37 +2,40 @@
 
 set -ueExo pipefail
 
-B=~/.bb/bb
-D=$(git rev-parse --show-toplevel)
-VK_TOML=$D/target/vk.toml
+b=~/.bb/bb
+d=$(git rev-parse --show-toplevel)
+vk_toml=$d/target/vk.toml
 
 nargo compile --workspace
 
-jq -r '.bytecode' $D/target/noir_safe_storage_proof_circuit.json | base64 -d > $D/target/sp_circuit.gz
-$B write_vk -b $D/target/sp_circuit.gz -o $D/target/sp_vk
-$B vk_as_fields -k $D/target/sp_vk -o $D/target/sp_vk_as_fields
-SP_VK_HASH=$(jq -r '.[0]' $D/target/sp_vk_as_fields)
-SP_VK_AS_FIELDS=$(jq -r '.[1:]' $D/target/sp_vk_as_fields)
+jq -r '.bytecode' $d/target/noir_safe_storage_proof_circuit.json | base64 -d > $d/target/sp_circuit.gz
+$b write_vk -b $d/target/sp_circuit.gz -o $d/target/sp_vk
+$b vk_as_fields -k $d/target/sp_vk -o $d/target/sp_vk_as_fields
+sp_vk_hash=$(jq -r '.[0]' $d/target/sp_vk_as_fields)
+sp_vk_as_fields=$(jq -r '.[1:]' $d/target/sp_vk_as_fields)
 
-jq -r '.bytecode' $D/target/noir_safe_account_proof_circuit.json | base64 -d > $D/target/ap_circuit.gz
-$B write_vk -b $D/target/ap_circuit.gz -o $D/target/ap_vk
-$B vk_as_fields -k $D/target/ap_vk -o $D/target/ap_vk_as_fields
-AP_VK_HASH=$(jq -r '.[0]' $D/target/ap_vk_as_fields)
-AP_VK_AS_FIELDS=$(jq -r '.[1:]' $D/target/ap_vk_as_fields)
+jq -r '.bytecode' $d/target/noir_safe_account_proof_circuit.json | base64 -d > $d/target/ap_circuit.gz
+$b write_vk -b $d/target/ap_circuit.gz -o $d/target/ap_vk
+$b vk_as_fields -k $d/target/ap_vk -o $d/target/ap_vk_as_fields
+ap_vk_hash=$(jq -r '.[0]' $d/target/ap_vk_as_fields)
+ap_vk_as_fields=$(jq -r '.[1:]' $d/target/ap_vk_as_fields)
 
-jq -r '.bytecode' $D/target/noir_safe_anchor_circuit.json | base64 -d > $D/target/an_circuit.gz
-$B write_vk -b $D/target/an_circuit.gz -o $D/target/an_vk
-$B vk_as_fields -k $D/target/an_vk -o $D/target/an_vk_as_fields
-AN_VK_HASH=$(jq -r '.[0]' $D/target/an_vk_as_fields)
-AN_VK_AS_FIELDS=$(jq -r '.[1:]' $D/target/an_vk_as_fields)
+jq -r '.bytecode' $d/target/noir_safe_anchor_circuit.json | base64 -d > $d/target/an_circuit.gz
+$b write_vk -b $d/target/an_circuit.gz -o $d/target/an_vk
+$b vk_as_fields -k $d/target/an_vk -o $d/target/an_vk_as_fields
+an_vk_hash=$(jq -r '.[0]' $d/target/an_vk_as_fields)
+an_vk_as_fields=$(jq -r '.[1:]' $d/target/an_vk_as_fields)
 
-jq -r '.bytecode' $D/target/noir_safe_aggregation_circuit.json | base64 -d > $D/target/ag_circuit.gz
-$B write_vk -b $D/target/ag_circuit.gz -o $D/target/ag_vk
+jq -r '.bytecode' $d/target/noir_safe_aggregation_circuit.json | base64 -d > $d/target/ag_circuit.gz
+$b write_vk -b $d/target/ag_circuit.gz -o $d/target/ag_vk
 
-echo "sp_vk_hash = \"$SP_VK_HASH\"
-sp_vk = $SP_VK_AS_FIELDS
-ap_vk_hash = \"$AP_VK_HASH\"
-ap_vk = $AP_VK_AS_FIELDS
-an_vk_hash = \"$AN_VK_HASH\"
-an_vk = $AN_VK_AS_FIELDS
-" > $VK_TOML
+cp $d/target/ag_vk $d/target/vk
+$b contract -o $d/contract/UltraVerifier.sol
+
+echo "sp_vk_hash = \"$sp_vk_hash\"
+sp_vk = $sp_vk_as_fields
+ap_vk_hash = \"$ap_vk_hash\"
+ap_vk = $ap_vk_as_fields
+an_vk_hash = \"$an_vk_hash\"
+an_vk = $an_vk_as_fields
+" > $vk_toml

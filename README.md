@@ -30,7 +30,7 @@ MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
   ./scripts/test.sh
 ```
 
-Compile all circuits
+Compile all circuits and generate a Solidity verifier
 
 ```sh
 ./scripts/compile.sh
@@ -53,14 +53,8 @@ Generate the aggregated proof
 ./scripts/aggregate.sh
 ```
 
-Verify locally
+Verify with the binary and in solidity
 
 ```sh
 ./scripts/verify.sh
-```
-
-Generate the Solidity verifier
-
-```sh
-./scripts/solidity_verifier.sh
 ```
