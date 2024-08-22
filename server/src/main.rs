@@ -1,4 +1,4 @@
-#![feature(lazy_cell)]
+// #![feature(lazy_cell)]
 
 #[macro_use]
 extern crate rocket;
@@ -17,8 +17,9 @@ use rocket::{
 // use sp1_sdk::{HashableKey, ProverClient, SP1ProvingKey, SP1Stdin, SP1VerifyingKey};
 use std::{env, process::ExitStatus};
 use std::net::Ipv4Addr;
-use std::sync::LazyLock;
+// use std::sync::LazyLock;
 use std::process::Command;
+use std::fs::read;
 use serde::{Deserialize, Serialize};
 
 // const ELF: &[u8] = include_bytes!("../../program/elf/riscv32im-succinct-zkvm-elf");
@@ -35,6 +36,7 @@ use serde::{Deserialize, Serialize};
 //     Prover { client, pk, vk }
 // });
 
+const PUBLIC_INPUTS_BYTES: usize = 512 + 64;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NoirSafeParams {
@@ -87,16 +89,23 @@ if !prelude.status.success() {
     bail!("prelude failed");
 }
 let anchor = {
-    let last_line = String::from_utf8_lossy(&prelude.stdout).split('\n').last().context("")?;
-    let digits = last_line.chars().filter(|char| char.is_digit(10)).collect::<String>();
+    let digits = String::from_utf8_lossy(&prelude.stdout).split('\n').last().context("")?
+   .chars().filter(|char| char.is_digit(10)).collect::<String>();
     u64::from_str_radix(&digits, 10)?
 };
 let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", cargo_manifest_dir))
                      .output()?;
 if !aggregation.status.success() {
-    bail!("prelude failed");
+    bail!("aggregation failed");
 }
-
+let mut ag_proof = read(format!("{}/../target/ag_proof.bin", cargo_manifest_dir))?;
+let proofbin = ag_proof.split_off(PUBLIC_INPUTS_BYTES);
+let _public_inputs = ag_proof;
+let blockhash = &_public_inputs[0..32];
+let challenge = &_public_inputs[32..64];
+//TODO use chunked iter iter_chunks::IterChunks !
+// to map this slice into 32 byte 0x pefixed hex strings
+// let public_inputs = _public_inputs[64..PUBLIC_INPUTS_BYTES].into_
 
 
 
