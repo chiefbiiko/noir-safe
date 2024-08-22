@@ -15,7 +15,7 @@ use rocket::{
 // use sp1_safe_basics::{Inputs, NoirSafeParams, NoirSafeParams};
 // use sp1_safe_fetch::fetch_inputs;
 // use sp1_sdk::{HashableKey, ProverClient, SP1ProvingKey, SP1Stdin, SP1VerifyingKey};
-use std::{env, process::ExitStatus};
+use std::env;
 use std::net::Ipv4Addr;
 // use std::sync::LazyLock;
 use std::process::Command;
@@ -57,6 +57,13 @@ pub struct NoirSafeResult {
     pub public_inputs: Vec<String>
 }
 
+fn is_0x_hex(len: usize, s: &str) -> bool {
+    if &s[0..2] != "0x" || (s.len() - 2) != len {
+        return false;
+    }
+    true
+}
+
 async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     log::info!("🏈 incoming request");
     let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
@@ -66,8 +73,8 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         _ => bail!("invalid chain_id {}", params.chain_id),
     };
 
-    let safe: [u8; 20] = const_hex::decode_to_array::<&str, 20>(&params.safe_address)?;
-    let msg_hash: [u8; 32] = const_hex::decode_to_array::<&str, 32>(&params.message_hash)?;
+    // let safe: [u8; 20] = const_hex::decode_to_array::<&str, 20>(&params.safe_address)?;
+    // let msg_hash: [u8; 32] = const_hex::decode_to_array::<&str, 32>(&params.message_hash)?;
 
     
 
@@ -81,8 +88,11 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     //              hex_proof=$(tail -c +$(($pub_bytes + 1)) $d/target/ag_proof.bin | od -An -v -t x1 | tr -d $' \n')
 
 
-
+//TODO validate params safe_address and message_hash with is_0x_hex(l,s)
 let prelude = Command::new("cargo run")
+                        .env("RPC", rpc)
+                        .env("SAFE", &params.safe_address)
+                        .env("MSG_HASH", &params.message_hash)
                      .arg(format!("--manifest-path {}/../prelude/Cargo.toml", cargo_manifest_dir))
                      .output()?;
 if !prelude.status.success() {
@@ -103,9 +113,10 @@ let proofbin = ag_proof.split_off(PUBLIC_INPUTS_BYTES);
 let _public_inputs = ag_proof;
 let blockhash = &_public_inputs[0..32];
 let challenge = &_public_inputs[32..64];
-//TODO use chunked iter iter_chunks::IterChunks !
-// to map this slice into 32 byte 0x pefixed hex strings
-// let public_inputs = _public_inputs[64..PUBLIC_INPUTS_BYTES].into_
+let public_inputs = _public_inputs[64..PUBLIC_INPUTS_BYTES].chunks(32)
+.map(|pi| format!("0x{}", const_hex::encode(pi)))
+.collect::<Vec<String>>();
+
 
 
 
@@ -133,7 +144,7 @@ let challenge = &_public_inputs[32..64];
         block_hash: format!("0x{}", const_hex::encode(blockhash)),
         challenge: format!("0x{}", const_hex::encode(challenge)),
         proof: format!("0x{}", const_hex::encode(proofbin)),
-        public_inputs: vec![], //TODO
+        public_inputs,
     }))
 }
 
