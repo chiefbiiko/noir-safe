@@ -62,6 +62,13 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     if !is_0x_hex(32, &params.message_hash) {
         bail!("invalid msg hash {}", &params.message_hash);
     }
+
+    let h = home::cargo_home().expect("home");
+    let c = format!("{}/.cargo/", h);
+    println!(">>>>>> cargo --version");
+    let v =  Command::new("cargo --version").output()?;
+    println!(">>>>>> v {}", v.status.success());
+    
     let prelude = Command::new("cargo run")
         .env("RPC", rpc)
         .env("SAFE", &params.safe_address)
