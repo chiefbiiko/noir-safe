@@ -11,9 +11,15 @@ use rocket::{
     Config, Response,
 };
 use serde::{Deserialize, Serialize};
-use std::{env, fs::read, net::Ipv4Addr, process::Command};
+use std::{
+    env,
+    fs::{read, read_to_string},
+    net::Ipv4Addr,
+    process::Command,
+};
 
 const PUBLIC_INPUTS_BYTES: usize = 512 + 64;
+// const DIR: &str = env!("CARGO_MANIFEST_DIR");
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NoirSafeParams {
@@ -43,10 +49,10 @@ fn is_0x_hex(len: usize, s: &str) -> bool {
 
 async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     log::info!("🏈 incoming request");
-    let dir = env!("CARGO_MANIFEST_DIR");
+    let dir = env::var("CARGO_MANIFEST_DIR").expect("cargo manifest dir");
     let rpc = match params.chain_id {
-        100 => env::var("GNOSIS_RPC").unwrap_or("https://rpc.gnosis.gateway.fm".to_string()),
-        11155111 => env::var("SEPOLIA_RPC").unwrap_or("https://1rpc.io/sepolia".to_string()),
+        100_u64 => env::var("GNOSIS_RPC").unwrap_or("https://rpc.gnosis.gateway.fm".to_string()),
+        11155111_u64 => env::var("SEPOLIA_RPC").unwrap_or("https://1rpc.io/sepolia".to_string()),
         _ => bail!("invalid chain_id {}", params.chain_id),
     };
 
@@ -164,6 +170,11 @@ impl Fairing for CORS {
 #[launch]
 fn rocket() -> _ {
     std::env::set_var("RUST_LOG", "info");
+    env_logger::init();
+    let dir = env::var("CARGO_MANIFEST_DIR").expect("cargo manifest dir");
+    let vk_hash: String = read_to_string(format!("{}/../target/vk_hash", dir)).expect("vk hash");
+    log::info!("vkey hash {}", vk_hash);
+
     let config = Config {
         port: std::env::var("PORT")
             .map(|p| p.parse::<u16>().expect("invalid port"))
@@ -173,10 +184,6 @@ fn rocket() -> _ {
         limits: Limits::default().limit("json", 256.bytes()),
         ..Config::release_default()
     };
-
-    let vk_hash =
-        read(format!("{}/../target/vk_hash", env!("CARGO_MANIFEST_DIR"))).expect("vk hash");
-    log::info!("vkey hash 0x{}", const_hex::encode(&vk_hash));
 
     rocket::custom(&config)
         .attach(CORS)
