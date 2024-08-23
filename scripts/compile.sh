@@ -29,6 +29,11 @@ an_vk_as_fields=$(jq -r '.[1:]' $d/target/an_vk_as_fields)
 jq -r '.bytecode' $d/target/noir_safe_aggregation_circuit.json | base64 -d > $d/target/ag_circuit.gz
 $b write_vk -b $d/target/ag_circuit.gz -o $d/target/ag_vk
 
+$b vk_as_fields -k $d/target/ag_vk -o $d/target/ag_vk_as_fields
+ag_vk_hash=$(jq -r '.[0]' $d/target/ag_vk_as_fields)
+
+echo "$ag_vk_hash" > $d/target/vk_hash
+
 cp $d/target/ag_vk $d/target/vk
 $b contract -o $d/contract/UltraVerifier.sol
 
