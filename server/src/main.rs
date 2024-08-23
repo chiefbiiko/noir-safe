@@ -63,19 +63,21 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         bail!("invalid msg hash {}", &params.message_hash);
     }
 
-    let h = home::cargo_home().expect("home");
-    let c = format!("{}/.cargo/", h);
-    println!(">>>>>> cargo --version");
-    let v =  Command::new("cargo --version").output()?;
-    println!(">>>>>> v {}", v.status.success());
-    
-    let prelude = Command::new("cargo run")
+    let cargo = format!(
+        "{}/bin/cargo",
+        home::cargo_home().expect("home").to_string_lossy()
+    );
+
+    let prelude = Command::new(cargo)
+        .arg("run")
         .env("RPC", rpc)
         .env("SAFE", &params.safe_address)
         .env("MSG_HASH", &params.message_hash)
-        .arg(format!("--manifest-path {}/../prelude/Cargo.toml", dir))
+        .arg("--manifest-path")
+        .arg(format!("{}/../prelude/Cargo.toml", dir))
         .output()?;
     if !prelude.status.success() {
+        log::error!("{}", String::from_utf8_lossy(&prelude.stderr));
         bail!("prelude failed");
     }
     let anchor = {
@@ -90,6 +92,7 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     };
     let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", dir)).output()?;
     if !aggregation.status.success() {
+        log::error!("{}", String::from_utf8_lossy(&aggregation.stderr));
         bail!("aggregation failed");
     }
     let mut ag_proof = read(format!("{}/../target/ag_proof.bin", dir))?;
