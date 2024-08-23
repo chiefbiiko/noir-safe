@@ -41,7 +41,7 @@ pub struct NoirSafeResult {
 }
 
 fn is_0x_hex(len: usize, s: &str) -> bool {
-    if &s[0..2] != "0x" || (s.len() - 2) != len {
+    if &s[0..2] != "0x" || (s.len() - 2) / 2 != len {
         return false;
     }
     true
@@ -51,13 +51,16 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     log::info!("🏈 incoming request");
     let dir = env::var("CARGO_MANIFEST_DIR").expect("cargo manifest dir");
     let rpc = match params.chain_id {
-        100_u64 => env::var("GNOSIS_RPC").unwrap_or("https://rpc.gnosis.gateway.fm".to_string()),
-        11155111_u64 => env::var("SEPOLIA_RPC").unwrap_or("https://1rpc.io/sepolia".to_string()),
+        100 => env::var("GNOSIS_RPC").unwrap_or("https://rpc.gnosis.gateway.fm".to_string()),
+        11155111 => env::var("SEPOLIA_RPC").unwrap_or("https://1rpc.io/sepolia".to_string()),
         _ => bail!("invalid chain_id {}", params.chain_id),
     };
 
-    if !is_0x_hex(20, &params.safe_address) || !is_0x_hex(32, &params.message_hash) {
-        bail!("invalid chain_id {}", params.chain_id);
+    if !is_0x_hex(20, &params.safe_address) {
+        bail!("invalid safe address {}", &params.safe_address);
+    }
+    if !is_0x_hex(32, &params.message_hash) {
+        bail!("invalid msg hash {}", &params.message_hash);
     }
     let prelude = Command::new("cargo run")
         .env("RPC", rpc)
