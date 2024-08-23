@@ -81,13 +81,27 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         bail!("prelude failed");
     }
     let anchor = {
-        let digits = String::from_utf8_lossy(&prelude.stdout)
+        // let digits = String::from_utf8_lossy(&prelude.stdout)
+        //     .split('\n')
+        //     .last()
+        //     .context("last line")?
+        //     .chars()
+        //     .filter(|char| char.is_digit(10))
+        //     .collect::<String>();
+
+        let str_stdout = String::from_utf8_lossy(&prelude.stdout);
+        let last_line = str_stdout//String::from_utf8_lossy(&prelude.stdout)
             .split('\n')
             .last()
-            .context("")?
+            .context("last line")?;
+
+        println!(">>>>>>>>>>>>>> last_line {}", last_line);
+
+          let digits = last_line  
             .chars()
             .filter(|char| char.is_digit(10))
             .collect::<String>();
+
         u64::from_str_radix(&digits, 10)?
     };
     let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", dir)).output()?;
