@@ -90,18 +90,10 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         //     .collect::<String>();
 
         let str_stdout = String::from_utf8_lossy(&prelude.stdout);
-        println!(">>>>> str_stdout {}", &str_stdout);
-        // let last_line = str_stdout//String::from_utf8_lossy(&prelude.stdout)
-        //     .split('\n')
-        //     .last()
-        //     .unwrap();
-
         //HACKY
-        let last_line = &str_stdout[(str_stdout.len() - 12)..];
+        let last_line = &str_stdout[(str_stdout.len() - 16)..];
 
-        println!(">>>>>>>>>>>>>> last_line {}", last_line);
-
-          let digits = last_line  
+        let digits = last_line
             .chars()
             .filter(|char| char.is_digit(10))
             .collect::<String>();
