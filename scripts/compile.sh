@@ -35,7 +35,7 @@ ag_vk_hash=$(jq -r '.[0]' $d/target/ag_vk_as_fields)
 echo "$ag_vk_hash" > $d/target/vk_hash
 
 cp $d/target/ag_vk $d/target/vk
-$b contract -o $d/contract/UltraVerifier.sol
+$b contract -o $d/UltraVerifier.sol
 
 echo "sp_vk_hash = \"$sp_vk_hash\"
 sp_vk = $sp_vk_as_fields

@@ -8,3 +8,4 @@ circuits/account_proof/Verifier.toml
 circuits/storage_proof/Verifier.toml
 cache
 out
+lib
