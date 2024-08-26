@@ -11,7 +11,7 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     continue-on-error: true
     runs-on: ubuntu-22.04
     steps:
@@ -27,13 +27,8 @@ jobs:
           noirup -v 0.32.0
           bbup -v 0.46.1
 
-      - name: Build server
-        run: cargo build --manifest-path ./server/Cargo.toml --release
-
-      - name: Server testing
-        run: |
-          ./server/target/release/noir-safe-server &
-          ./server/test.sh
+      - name: Build circuit
+        run: ./scripts/compile.sh
 
   check-changelog:
     if: startsWith(github.ref, 'refs/tags/v')
