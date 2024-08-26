@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
 use rocket::{
     data::{Limits, ToByteUnit},
     fairing::{Fairing, Info, Kind},
@@ -19,7 +19,6 @@ use std::{
 };
 
 const PUBLIC_INPUTS_BYTES: usize = 512 + 64;
-// const DIR: &str = env!("CARGO_MANIFEST_DIR");
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NoirSafeParams {
@@ -62,12 +61,10 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     if !is_0x_hex(32, &params.message_hash) {
         bail!("invalid msg hash {}", &params.message_hash);
     }
-
     let cargo = format!(
         "{}/bin/cargo",
-        home::cargo_home().expect("home").to_string_lossy()
+        home::cargo_home().expect("cargo home").to_string_lossy()
     );
-
     let prelude = Command::new(cargo)
         .arg("run")
         .env("RPC", rpc)
@@ -81,19 +78,10 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         bail!("prelude failed");
     }
     let anchor = {
-        // let digits = String::from_utf8_lossy(&prelude.stdout)
-        //     .split('\n')
-        //     .last()
-        //     .context("last line")?
-        //     .chars()
-        //     .filter(|char| char.is_digit(10))
-        //     .collect::<String>();
-
-        let str_stdout = String::from_utf8_lossy(&prelude.stdout);
-        //HACKY
-        let last_line = &str_stdout[(str_stdout.len() - 16)..];
-
-        let digits = last_line
+        let digits = String::from_utf8_lossy(&prelude.stdout)
+            .lines()
+            .last()
+            .expect("last line")
             .chars()
             .filter(|char| char.is_digit(10))
             .collect::<String>();

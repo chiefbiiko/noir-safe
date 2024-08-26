@@ -33,7 +33,7 @@ const MAX_ACCOUNT_STATE_LENGTH: usize = 134;
 /// Minimum number of bytes of a RLP encoded header
 const HEADER_RLP_MIN_BYTES: usize = 577;
 /// Maximum number of bytes of a RLP encoded header
-const HEADER_RLP_MAX_BYTES: usize = 599;
+const HEADER_RLP_MAX_BYTES: usize = 636;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Inputs {
