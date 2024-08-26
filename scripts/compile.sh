@@ -26,6 +26,8 @@ $b vk_as_fields -k $d/target/an_vk -o $d/target/an_vk_as_fields
 an_vk_hash=$(jq -r '.[0]' $d/target/an_vk_as_fields)
 an_vk_as_fields=$(jq -r '.[1:]' $d/target/an_vk_as_fields)
 
+cp $d/target/noir_safe_aggregation_circuit.json $d/noir_safe_aggregation_circuit.json
+
 jq -r '.bytecode' $d/target/noir_safe_aggregation_circuit.json | base64 -d > $d/target/ag_circuit.gz
 $b write_vk -b $d/target/ag_circuit.gz -o $d/target/ag_vk
 

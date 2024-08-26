@@ -58,3 +58,15 @@ Verify with the binary and in solidity
 ```sh
 ./scripts/verify.sh
 ```
+
+Run the proving server
+
+```
+cargo run --manifest-path ./server/Cargo.toml --release
+```
+
+Test the proving server
+
+```
+./server/test.sh 
+```
