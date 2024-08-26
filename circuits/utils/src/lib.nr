@@ -12,7 +12,7 @@ global SAFE_SIGNED_MSG_VALUE =
 /// Minimum number of bytes of a RLP encoded header
 global HEADER_RLP_MIN_BYTES = 577;
 /// Maximum number of bytes of a RLP encoded header
-global HEADER_RLP_MAX_BYTES = 599;
+global HEADER_RLP_MAX_BYTES = 636;
 
 pub fn bytes32_to_field(
     array: [u8; 32]
