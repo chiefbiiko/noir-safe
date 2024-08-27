@@ -37,13 +37,15 @@ async fn main() {
     sp_prover_file
         .write_all(prover_toml.as_bytes())
         .expect("sp_prover_file write");
+
     let mut an_prover_file = std::fs::File::create(format!(
-        "{}/../circuits/anchor/Prover.toml",
-        cargo_manifest_dir
-    ))
-    .expect("an_prover_file");
+            "{}/../circuits/anchor/Prover.toml",
+            cargo_manifest_dir
+        ))
+        .expect("an_prover_file");
+    let an_payload = format!("{}\nblocknumber = {}", prover_toml, anchor);
     an_prover_file
-        .write_all(prover_toml.as_bytes())
+        .write_all(an_payload.as_bytes())
         .expect("an_prover_file write");
 
     println!("anchor block number {}", anchor);
