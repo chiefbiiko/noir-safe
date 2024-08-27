@@ -51,7 +51,7 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     let dir = env::var("CARGO_MANIFEST_DIR").expect("cargo manifest dir");
     let rpc = match params.chain_id {
         100 => env::var("GNOSIS_RPC").unwrap_or("https://rpc.gnosis.gateway.fm".to_string()),
-        11155111 => env::var("SEPOLIA_RPC").unwrap_or("https://1rpc.io/sepolia".to_string()),
+        11155111 => env::var("SEPOLIA_RPC").unwrap_or("https://ethereum-sepolia-rpc.publicnode.com".to_string()),
         _ => bail!("invalid chain_id {}", params.chain_id),
     };
 
