@@ -98,7 +98,7 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     let _public_inputs = ag_proof;
     let blockhash = &_public_inputs[0..32];
     let challenge = &_public_inputs[32..64];
-    let public_inputs = _public_inputs[64..PUBLIC_INPUTS_BYTES]
+    let public_inputs = _public_inputs[0..PUBLIC_INPUTS_BYTES]
         .chunks(32)
         .map(|pi| format!("0x{}", const_hex::encode(pi)))
         .collect::<Vec<String>>();
