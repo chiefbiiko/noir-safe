@@ -1,8 +1,9 @@
 # noir-safe
-
+<!--
 [![ci](https://github.com/chiefbiiko/noir-safe/workflows/ci/badge.svg)](https://github.com/chiefbiiko/noir-safe/actions/workflows/ci.yml) [![release](https://img.shields.io/github/v/release/chiefbiiko/noir-safe?include_prereleases)](https://github.com/chiefbiiko/noir-safe/releases/latest)
 
 _ ▓ Safe zk multisig ✞✰
+-->
 
 Verifies an EIP-1186 storage proof of a Safe multisig within a 3-fold aggregated circuit.
 
