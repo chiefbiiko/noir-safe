@@ -9,3 +9,4 @@ circuits/storage_proof/Verifier.toml
 cache
 out
 lib
+target*
