@@ -4,7 +4,6 @@ set -ueExo pipefail
 
 n=~/.nargo/bin/nargo
 b=~/.bb/bb
-_yq=/usr/bin/yq
 d=$(git rev-parse --show-toplevel)
 vk_toml=$d/target/vk.toml
 ag_prover_toml=$d/circuits/aggregation/Prover.toml
@@ -28,8 +27,8 @@ an_shard() {
     $b prove -b $d/target/an_circuit -w $d/target/an_witness.gz -o $d/target/an_proof.bin
     an_full_proof_as_fields="$($b proof_as_fields -p $d/target/an_proof.bin -k $d/target/an_vk -o -)"
     an_proof_as_fields="$(echo $an_full_proof_as_fields | jq -r '.[2:]')"
-    blockhash=$($_yq -r '.blockhash' $d/circuits/anchor/Prover.toml)
-    challenge=$($_yq -r '.challenge' $d/circuits/anchor/Prover.toml)
+    blockhash=$(yq -r '.blockhash' $d/circuits/anchor/Prover.toml)
+    challenge=$(yq -r '.challenge' $d/circuits/anchor/Prover.toml)
     echo -e "an_pi = [\"$blockhash\", \"$challenge\"]\nan_proof = $an_proof_as_fields" >> $ag_prover_toml
 }
 
