@@ -2,11 +2,12 @@
 
 set -ueExo pipefail
 
+n=~/.nargo/bin/nargo
 b=~/.bb/bb
 d=$(git rev-parse --show-toplevel)
 vk_toml=$d/target/vk.toml
 
-nargo compile --workspace
+$n compile --workspace
 
 jq -r '.bytecode' $d/target/noir_safe_storage_proof_circuit.json | base64 -d > $d/target/sp_circuit.gz
 $b write_vk -b $d/target/sp_circuit.gz -o $d/target/sp_vk
