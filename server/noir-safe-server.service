@@ -1,11 +1,11 @@
 [Unit]
-Description=noir-safe proving server systemd service
+Description=noir-safe server
 After=network-online.target
 [Service]
-User=me
-WorkingDirectory=/home/me/apps/noir-safe
-EnvironmentFile=/home/me/apps/noir-safe/server/.env
+User=<XXXXXX>
+WorkingDirectory=/home/<XXXXXX>/apps/noir-safe/server
 Restart=on-failure
-ExecStart=/usr/local/bin/noir-safe-server
+Environment="CARGO_MANIFEST_DIR=/home/<XXXXXX>/apps/noir-safe/server"
+ExecStart=/home/<XXXXXX>/apps/noir-safe/server/target/release/noir-safe-server
 [Install]
 WantedBy=multi-user.target
