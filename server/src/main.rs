@@ -16,7 +16,7 @@ use std::{
     fs::{read, read_to_string},
     net::Ipv4Addr,
     process::Command,
-    time::{SystemTime, UNIX_EPOCH}
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 const PUBLIC_INPUTS_BYTES: usize = 512 + 64;
@@ -59,7 +59,8 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     let dir = env::var("CARGO_MANIFEST_DIR").expect("cargo manifest dir");
     let rpc = match params.chain_id {
         100 => env::var("GNOSIS_RPC").unwrap_or("https://rpc.gnosis.gateway.fm".to_string()),
-        11155111 => env::var("SEPOLIA_RPC").unwrap_or("https://ethereum-sepolia-rpc.publicnode.com".to_string()),
+        11155111 => env::var("SEPOLIA_RPC")
+            .unwrap_or("https://ethereum-sepolia-rpc.publicnode.com".to_string()),
         _ => bail!("invalid chain_id {}", params.chain_id),
     };
 
@@ -91,7 +92,9 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         let digits = read_to_string(format!("{}/../target/anchor_{}.txt", dir, req_id))?;
         u64::from_str_radix(&digits, 10)?
     };
-    let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", dir)).env("REQ_ID", &req_id).output()?;
+    let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", dir))
+        .env("REQ_ID", &req_id)
+        .output()?;
     if !aggregation.status.success() {
         log::error!("{}", String::from_utf8_lossy(&aggregation.stderr));
         bail!("aggregation failed");
