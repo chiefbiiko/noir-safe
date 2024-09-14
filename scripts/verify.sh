@@ -4,11 +4,12 @@ set -ueExo pipefail
 
 b=~/.bb/bb
 d=$(git rev-parse --show-toplevel)
+req_id=$REQ_ID
 
 # verify in solidity
 pub_bytes=$((32 * $((2+16)))) # 2 actual public inputs; 16 from accumulator
-hex_pubs=$(head -c $pub_bytes $d/target/ag_proof.bin | od -An -v -t x1 | tr -d $' \n')
-hex_proof=$(tail -c +$(($pub_bytes + 1)) $d/target/ag_proof.bin | od -An -v -t x1 | tr -d $' \n')
+hex_pubs=$(head -c $pub_bytes $d/target/ag_proof_$req_id.bin | od -An -v -t x1 | tr -d $' \n')
+hex_proof=$(tail -c +$(($pub_bytes + 1)) $d/target/ag_proof_$req_id.bin | od -An -v -t x1 | tr -d $' \n')
 anvil &
 anvil_pid=$!
 deploy_info=$( \
@@ -41,4 +42,4 @@ cast call $verifier_adrs "verify(bytes, bytes32[])(bool)" "0x$hex_proof" "[ \
 kill $anvil_pid
 
 # verify with binary
-$b verify -p $d/target/ag_proof.bin -k $d/target/ag_vk
+$b verify -p $d/target/ag_proof_$req_id.bin -k $d/target/ag_vk
