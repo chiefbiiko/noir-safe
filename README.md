@@ -45,13 +45,14 @@ Fetch and preprocess inputs
 RPC=https://rpc.gnosis.gateway.fm \
 SAFE=0x38Ba7f...673336EDDc \
 MSG_HASH=0xa225aed0c0283cef82b24485b8b28fb756fc9ce83d25e5cf799d0c8aa20ce6b7 \
+REQ_ID=123 \
   cargo run --manifest-path prelude/Cargo.toml
 ```
 
 Generate the aggregated proof
 
 ```sh
-./scripts/aggregate.sh
+REQ_ID=123 ./scripts/aggregate.sh
 ```
 
 Verify with the binary and in solidity
