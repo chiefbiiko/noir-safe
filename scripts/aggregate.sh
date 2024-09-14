@@ -39,10 +39,10 @@ ag_circuit() {
 }
 
 cleanup() {
-    rm $d/circuits/storage_proof/sp-prover-$req_id.toml \
-        $d/circuits/account_proof/ap-prover-$req_id.toml \
-        $d/circuits/anchor/an-prover-$req_id.toml \
-        $d/circuits/aggregation/ag-prover-$req_id.toml \
+    rm $d/circuits/storage_proof/sp_prover_$req_id.toml \
+        $d/circuits/account_proof/ap_prover_$req_id.toml \
+        $d/circuits/anchor/an_prover_$req_id.toml \
+        $d/circuits/aggregation/ag_prover_$req_id.toml \
         $d/target/sp_witness_$req_id.gz \
         $d/target/ap_witness_$req_id.gz \
         $d/target/an_witness_$req_id.gz \
