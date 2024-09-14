@@ -7,8 +7,6 @@ _ ▓ Safe zk multisig ✞✰
 
 Verifies an EIP-1186 storage proof of a Safe multisig within a 3-fold aggregated circuit.
 
-**WIP**
-
 Install tooling
 
 ```sh
@@ -57,7 +55,7 @@ Generate the aggregated proof
 REQ_ID=123 ./scripts/aggregate.sh
 ```
 
-Verify with the binary and in solidity
+Verify with the binary and in Solidity
 
 ```sh
 REQ_ID=123 ./scripts/verify.sh
