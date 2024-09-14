@@ -26,26 +26,22 @@ async fn main() {
 
     let mut sp_prover_file = std::fs::File::create(format!(
         "{}/../circuits/storage_proof/sp_prover_{}.toml",
-        cargo_manifest_dir,
-        &req_id
+        cargo_manifest_dir, &req_id
     ))
     .expect("sp_prover_file");
     let mut ap_prover_file = std::fs::File::create(format!(
         "{}/../circuits/account_proof/ap_prover_{}.toml",
-        cargo_manifest_dir,
-        &req_id
+        cargo_manifest_dir, &req_id
     ))
     .expect("ap_prover_file");
     let mut an_prover_file = std::fs::File::create(format!(
         "{}/../circuits/anchor/an_prover_{}.toml",
-        cargo_manifest_dir,
-        &req_id
+        cargo_manifest_dir, &req_id
     ))
     .expect("an_prover_file");
     let mut anchor_file = std::fs::File::create(format!(
         "{}/../target/anchor_{}.txt",
-        cargo_manifest_dir,
-        req_id
+        cargo_manifest_dir, req_id
     ))
     .expect("anchor_file");
 
