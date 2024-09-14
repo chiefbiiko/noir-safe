@@ -16,6 +16,7 @@ use std::{
     fs::{read, read_to_string},
     net::Ipv4Addr,
     process::Command,
+    time::{SystemTime, UNIX_EPOCH}
 };
 
 const PUBLIC_INPUTS_BYTES: usize = 512 + 64;
@@ -46,6 +47,13 @@ fn is_0x_hex(len: usize, s: &str) -> bool {
     true
 }
 
+pub fn get_epoch_millis() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis()
+}
+
 async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
     log::info!("🏈 incoming request");
     let dir = env::var("CARGO_MANIFEST_DIR").expect("cargo manifest dir");
@@ -65,11 +73,13 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         "{}/bin/cargo",
         home::cargo_home().expect("cargo home").to_string_lossy()
     );
+    let req_id = get_epoch_millis().to_string();
     let prelude = Command::new(cargo)
         .arg("run")
         .env("RPC", rpc)
         .env("SAFE", &params.safe_address)
         .env("MSG_HASH", &params.message_hash)
+        .env("REQ_ID", &req_id)
         .arg("--manifest-path")
         .arg(format!("{}/../prelude/Cargo.toml", dir))
         .output()?;
@@ -78,22 +88,15 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         bail!("prelude failed");
     }
     let anchor = {
-        let digits = String::from_utf8_lossy(&prelude.stdout)
-            .lines()
-            .last()
-            .expect("last line")
-            .chars()
-            .filter(|char| char.is_digit(10))
-            .collect::<String>();
-
+        let digits = read_to_string(format!("{}/../target/anchor_{}.txt", dir, req_id))?;
         u64::from_str_radix(&digits, 10)?
     };
-    let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", dir)).output()?;
+    let aggregation = Command::new(format!("{}/../scripts/aggregate.sh", dir)).env("REQ_ID", &req_id).output()?;
     if !aggregation.status.success() {
         log::error!("{}", String::from_utf8_lossy(&aggregation.stderr));
         bail!("aggregation failed");
     }
-    let mut ag_proof = read(format!("{}/../target/ag_proof.bin", dir))?;
+    let mut ag_proof = read(format!("{}/../target/ag_proof_{}.bin", dir, req_id))?;
     let proofbin = ag_proof.split_off(PUBLIC_INPUTS_BYTES);
     let _public_inputs = ag_proof;
     let blockhash = &_public_inputs[0..32];
