@@ -13,3 +13,4 @@ home = "0.5.9"
 log = "0.4.21"
 rocket = {version = "0.5.0", features = ["json"] }
 serde = { version = "1.0.196", features = ["derive"], default-features = false }
+nanoid = "0.4.0"

@@ -2,6 +2,7 @@
 extern crate rocket;
 
 use anyhow::{bail, Result};
+use nanoid::nanoid;
 use rocket::{
     data::{Limits, ToByteUnit},
     fairing::{Fairing, Info, Kind},
@@ -20,6 +21,9 @@ use std::{
 };
 
 const PUBLIC_INPUTS_BYTES: usize = 512 + 64;
+const REQ_ID_ALPHABET: [char; 16] = [
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+];
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NoirSafeParams {
@@ -74,7 +78,7 @@ async fn _proof(params: Json<NoirSafeParams>) -> Result<Value> {
         "{}/bin/cargo",
         home::cargo_home().expect("cargo home").to_string_lossy()
     );
-    let req_id = get_epoch_millis().to_string();
+    let req_id = nanoid!(32, &REQ_ID_ALPHABET);
     let prelude = Command::new(cargo)
         .arg("run")
         .env("RPC", rpc)
